@@ -19,6 +19,9 @@ const loadDemo = (): Session => { try { return JSON.parse(localStorage.getItem(D
 const saveAny = async (s: Session, patch: { avatar?: string; progress?: g.Progress }) => { if (backend) await backend.save(s.username, patch); else localStorage.setItem(DEMO, JSON.stringify({ ...s, ...patch })) }
 const VIDEOS: [RegExp, string][] = [[/room walk/i, '/hindi/room-walk-hi.mp4'], [/calf raise/i, '/hindi/calf-raise-hi.mp4'], [/bottle curl/i, '/hindi/bottle-curl-hi.mp4'], [/cool-down/i, '/hindi/cool-down-hi.mp4'], [/^bridge/i, '/hindi/bridge-hi.mp4'], [/wall push-up/i, '/hindi/wall-pushup-hi.mp4'], [/mini-squat/i, '/hindi/mini-squat-hi.mp4'], [/bird-dog/i, '/hindi/bird-dog-hi.mp4']]
 const videoFor = (n: string) => VIDEOS.find(([r]) => r.test(n))?.[1]
+let cachedSession: Session | null = null
+const lsGet = (k: string) => { try { return localStorage.getItem(k) } catch { return null } }
+const lsSet = (k: string, v: string | null) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v) } catch {} }
 const today = () => new Date().toLocaleDateString('en-CA')
 
 function Portrait({ h }: { h: Hunter }) { return <img className="art" src={`/avatars/${h.id}.jpg`} alt={h.name} /> }
@@ -26,28 +29,32 @@ function Portrait({ h }: { h: Hunter }) { return <img className="art" src={`/ava
 export type Page = 'home' | 'today' | 'hunter' | 'progress' | 'settings'
 const NAV: [Page, string, string][] = [['home', '/', 'Home'], ['today', '/today', "Today's Workout"], ['hunter', '/hunter', 'Hunter'], ['progress', '/progress', 'Progress'], ['settings', '/settings', 'Settings']]
 export default function App({ page = 'home' }: { page?: Page }) {
-  const [s, setS] = useState<Session | null>(() => (!real && localStorage.getItem(DEMO) ? loadDemo() : null))
+  const [s, setS] = useState<Session | null>(() => (!real && localStorage.getItem(DEMO) ? loadDemo() : cachedSession))
   const [mode, setMode] = useState<'in' | 'up'>('up')
   const [u, setU] = useState(''); const [p, setP] = useState(''); const [p2, setP2] = useState('')
   const [err, setErr] = useState('')
   const [tab, setTab] = useState<'all' | 'M' | 'F' | 'Hunter' | 'Monarch'>('all')
   const [pick, setPick] = useState<string | null>(null)
-  const [motion, setMotion] = useState(true)
+  const [motion, setMotionRaw] = useState(() => lsGet('srf-motion') !== 'off')
+  const setMotion = (v: boolean) => { setMotionRaw(v); lsSet('srf-motion', v ? null : 'off') }
+  const [saveErr, setSaveErr] = useState('')
   const [step, setStep] = useState<null | 'feel' | 'symptom'>(null)
   const [feel, setFeel] = useState<g.Feel | null>(null)
   const [sym, setSym] = useState<g.Symptom | null>(null)
 
-  useEffect(() => { backend?.restore().then(r => { if (r) setS(r) }).catch(() => {}) }, [])
-  async function logout() { await backend?.signOut(); setS(null); setU(''); setP(''); setP2('') }
+  useEffect(() => { backend?.restore().then(r => { if (r) { cachedSession = r; setS(r) } else { cachedSession = null; setS(null) } }).catch(() => {}) }, [])
+  async function logout() { await backend?.signOut(); cachedSession = null; lsSet('srf-t0', null); setS(null); setU(''); setP(''); setP2('') }
   async function auth() {
     setErr('')
     if (mode === 'up' && p !== p2) return setErr('Passwords do not match.')
-    try { setS(await (mode === 'up' ? backend!.signUp(u, p) : backend!.signIn(u, p))) } catch (e: any) { setErr(e.message) }
+    try { const r = await (mode === 'up' ? backend!.signUp(u, p) : backend!.signIn(u, p)); cachedSession = r; setS(r) } catch (e: any) { setErr(e.message) }
   }
-  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; setS(n); await saveAny(s, { progress: pr }) }
+  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); try { await saveAny(s, { progress: pr }) } catch { setSaveErr('Could not save to the server. Check your connection and try again.') } }
   const lv = useMemo(() => g.levelFromXp(s?.progress.xp ?? 0), [s])
   const band = Math.min(9, Math.floor((lv.level - 1) / 10))
-  const [t0, setT0] = useState<number | null>(null); const [, tick] = useState(0)
+  const [t0, setT0r] = useState<number | null>(() => { const v = Number(lsGet('srf-t0')); return v > 0 ? v : null })
+  const setT0 = (v: number | null) => { setT0r(v); lsSet('srf-t0', v === null ? null : String(v)) }
+  const [, tick] = useState(0)
   useEffect(() => { if (t0 === null) return; const i = setInterval(() => tick(x => x + 1), 1000); return () => clearInterval(i) }, [t0])
 
   if (!s && !real) return (
@@ -76,7 +83,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
       <div className="tabs">{(['all', 'M', 'F', 'Hunter', 'Monarch'] as const).map(t => <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{({ all: 'All', M: 'Male', F: 'Female', Hunter: 'S-Rank Hunters', Monarch: 'Monarchs' })[t]}</button>)}</div>
       <div className="grid">{list.map(h => <button key={h.id} className={'tile' + (pick === h.id ? ' sel' : '')} onClick={() => setPick(h.id)}>
         <Portrait h={h} /><b>{h.name}</b><i>{h.group}{h.note ? ' - ' + h.note : ''}</i></button>)}</div>
-      <button className="btn ghost" onClick={logout}>LOG OUT</button> <button className="btn" disabled={!pick} onClick={async () => { await saveAny(s, { avatar: pick! }); setS({ ...s, avatar: pick }) }}>CONFIRM AVATAR</button>
+      <button className="btn ghost" onClick={logout}>LOG OUT</button> <button className="btn" disabled={!pick} onClick={async () => { try { await saveAny(s, { avatar: pick! }) } catch { setErr('Could not save your avatar. Try again.'); return } const n = { ...s, avatar: pick }; cachedSession = n; setS(n) }}>CONFIRM AVATAR</button>
     </section></main>)
   }
 
@@ -92,6 +99,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
     <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level. Only Sung Jinwoo changes with level (10 art steps with a blend between them); the other avatars show one static portrait. Plans after 1 Nov are pending.</div>
+    {saveErr && <div className="err" role="alert">{saveErr}</div>}
     <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}</nav>
     <section className="dash">
       {page === 'home' && <>
