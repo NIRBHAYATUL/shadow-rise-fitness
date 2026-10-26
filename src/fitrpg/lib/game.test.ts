@@ -66,3 +66,14 @@ describe('plan and body', () => {
     expect(bodyBlend(100).b).toBeNull(); expect(tf(100)).toBe('Full Shadow Monarch')
   })
 })
+
+describe('one award per day', () => {
+  it('rest then quest gives no second XP', () => {
+    let p = g.rest(g.emptyProgress(), '2026-10-27'); const x = p.xp
+    p = g.complete(p, '2026-10-27', 'easy' as any, null); expect(p.xp).toBe(x)
+  })
+  it('quest then rest gives no second XP', () => {
+    let p = g.complete(g.emptyProgress(), '2026-10-27', 'easy' as any, null); const x = p.xp
+    p = g.rest(p, '2026-10-27'); expect(p.xp).toBe(x)
+  })
+})

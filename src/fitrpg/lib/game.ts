@@ -25,13 +25,13 @@ export const emptyProgress = (): Progress => ({ xp: 0, doneDays: [], pending: nu
 
 // Awarding is idempotent per day: a refresh or double tap never doubles XP.
 export function complete(p: Progress, day: string, feel: Feel, symptom: Symptom | null): Progress {
-  if (p.doneDays.includes(day)) return { ...p, pending: null }
+  if (p.doneDays.includes(day) || p.doneDays.includes('rest:' + day)) return { ...p, pending: null }
   if (needsSymptomStep(feel) && !symptom) return p // compulsory second step
   return { ...p, xp: p.xp + XP_PER_QUEST + XP_CHECKIN, doneDays: [...p.doneDays, day], pending: null }
 }
 export function rest(p: Progress, day: string): Progress {
   const key = 'rest:' + day
-  if (p.doneDays.includes(key)) return p
+  if (p.doneDays.includes(key) || p.doneDays.includes(day)) return p
   return { ...p, xp: p.xp + XP_REST, doneDays: [...p.doneDays, key] }
 }
 export function startPending(p: Progress, day: string): Progress { return { ...p, pending: { day } } }

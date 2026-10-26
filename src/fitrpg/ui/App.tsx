@@ -33,6 +33,8 @@ export default function App({ page = 'home' }: { page?: Page }) {
   const [mode, setMode] = useState<'in' | 'up'>('up')
   const [u, setU] = useState(''); const [p, setP] = useState(''); const [p2, setP2] = useState('')
   const [err, setErr] = useState('')
+  const [, setTick] = useState(0)
+  useEffect(() => { const i = setInterval(() => setTick(x => x + 1), 30000); return () => clearInterval(i) }, [])
   const [tab, setTab] = useState<'all' | 'M' | 'F' | 'Hunter' | 'Monarch'>('all')
   const [pick, setPick] = useState<string | null>(null)
   const [motion, setMotionRaw] = useState(() => lsGet('srf-motion') !== 'off')
@@ -89,7 +91,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
 
   const h = ROSTER.find(x => x.id === s.avatar)!
   const day = today()
-  const done = s.progress.doneDays.includes(day)
+  const done = s.progress.doneDays.includes(day) || s.progress.doneDays.includes('rest:' + day)
   const plan = dayPlan(day)
   const canTrain = plan.kind === 'train'
   async function finish() {
