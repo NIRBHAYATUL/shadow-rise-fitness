@@ -5,6 +5,8 @@ export interface Session { username: string; avatar: string | null; progress: Pr
 export interface Backend {
   signUp(username: string, password: string): Promise<Session>
   signIn(username: string, password: string): Promise<Session>
+  restore(): Promise<Session | null>
+  signOut(): Promise<void>
   save(username: string, patch: { avatar?: string; progress?: Progress }): Promise<void>
 }
 export function checkCreds(u: string, p: string): string | null {

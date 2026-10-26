@@ -6,16 +6,16 @@ import { Backend, Session, checkCreds } from './store'
 import { emptyProgress } from './game'
 export function supabaseBackend(url: string, anonKey: string): Backend {
   const sb = createClient(url, anonKey)
-  const alias = (u: string) => `${u}@players.invalid`
+  const alias = (u: string) => `${u.trim().toLowerCase()}@players.shadowrise.example`
   const load = async (username: string): Promise<Session> => {
-    const { data } = await sb.from('player_state').select('avatar,progress').single()
+    const { data } = await sb.from('player_state').select('avatar,progress').maybeSingle()
     return { username, avatar: data?.avatar ?? null, progress: data?.progress ?? emptyProgress() }
   }
   return {
     async signUp(u, p) {
       const e = checkCreds(u, p); if (e) throw new Error(e)
       const { error } = await sb.auth.signUp({ email: alias(u), password: p, options: { data: { username: u } } })
-      if (error) throw new Error(error.message)
+      if (error) throw new Error(/already/i.test(error.message) ? 'That username is taken. Pick another.' : 'Could not create the account. Try again.')
       return load(u)
     },
     async signIn(u, p) {
@@ -23,6 +23,11 @@ export function supabaseBackend(url: string, anonKey: string): Backend {
       if (error) throw new Error('Wrong username or password.')
       return load(u)
     },
+    async restore() {
+      const { data } = await sb.auth.getSession(); const em = data.session?.user.email
+      return em ? load(em.split('@')[0] ?? '') : null
+    },
+    async signOut() { await sb.auth.signOut() },
     async save(_u, patch) {
       const { data: s } = await sb.auth.getUser(); if (!s.user) throw new Error('Not signed in.')
       const { error } = await sb.from('player_state').upsert({ user_id: s.user.id, ...patch })

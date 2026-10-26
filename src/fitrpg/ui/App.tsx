@@ -9,8 +9,11 @@ import { titleFor, PROFILE_TITLES, ANIME_ANCHORS, bodyBlend, FULLBODY } from '..
 import { dayPlan } from '../lib/plan'
 
 const env = import.meta.env
-const real = !!env.VITE_SUPABASE_URL
-const backend: Backend | null = real ? supabaseBackend(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY) : null
+// Public client values (safe to ship): project URL and publishable key. Data is protected by row level security.
+const SB_URL = env.VITE_SUPABASE_URL || 'https://ahokjyjxucccbfzgpwmc.supabase.co'
+const SB_KEY = env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_xoxbWJHEcUJ6o76dpV3-EQ_CkznWUHF'
+const real = true
+const backend: Backend | null = supabaseBackend(SB_URL, SB_KEY)
 const DEMO = 'fitrpg-demo'
 const loadDemo = (): Session => { try { return JSON.parse(localStorage.getItem(DEMO) || '') } catch { return { username: 'demo', avatar: null, progress: g.emptyProgress() } } }
 const saveAny = async (s: Session, patch: { avatar?: string; progress?: g.Progress }) => { if (backend) await backend.save(s.username, patch); else localStorage.setItem(DEMO, JSON.stringify({ ...s, ...patch })) }
@@ -32,6 +35,8 @@ export default function App({ page = 'home' }: { page?: Page }) {
   const [feel, setFeel] = useState<g.Feel | null>(null)
   const [sym, setSym] = useState<g.Symptom | null>(null)
 
+  useEffect(() => { backend?.restore().then(r => { if (r) setS(r) }).catch(() => {}) }, [])
+  async function logout() { await backend?.signOut(); setS(null); setU(''); setP(''); setP2('') }
   async function auth() {
     setErr('')
     if (mode === 'up' && p !== p2) return setErr('Passwords do not match.')
@@ -58,6 +63,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
       {mode === 'up' && <input placeholder="Confirm password" type="password" value={p2} onChange={e => setP2(e.target.value)} autoComplete="new-password" />}
       {err && <div className="err" role="alert">{err}</div>}
       <button className="btn" onClick={auth}>{mode === 'up' ? 'CREATE ACCOUNT' : 'LOG IN'}</button>
+      <p className="note">Accounts use a username and password only, with no email. There is no password reset: if you lose your password, you will need to create a new account.</p>
       <a href="#" onClick={e => { e.preventDefault(); setMode(mode === 'up' ? 'in' : 'up'); setErr('') }}>{mode === 'up' ? 'Already a player? Log in' : 'New player? Create account'}</a>
     </section></main>)
 
@@ -83,7 +89,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     await update(g.complete(s!.progress, day, feel, sym)); setStep(null); setFeel(null); setSym(null)
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
-    {!real && <div className="demo" role="status">DEMO MODE: progress is saved in this browser only, not on a server. Not finished yet: server login and saving, Hindi trainer demos, a different avatar image for every level (avatars change in 10 steps with a blend between them), plans after 1 Nov.</div>}
+    <div className="demo" role="status">Early version. Accounts and server saving are live. Still being added: Hindi trainer demo videos, a different avatar image for every level (avatars change in 10 steps with a blend between them), and plans after 1 Nov.</div>
     <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}</nav>
     <section className="dash">
       {page === 'home' && <>
@@ -120,7 +126,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
       </>}
       {page === 'settings' && <>
         <div className="card stats"><div className="tag">SETTINGS</div>
-        <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label>        <small>Words on screen are English. Trainer voice demos (Hindi) are still being added.</small>{!real && <button className="btn ghost" onClick={() => { localStorage.removeItem(DEMO); location.href = '/' }}>RESET DEMO DATA</button>}</div>
+        <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label>        <small>Words on screen are English. Trainer voice demos (Hindi) are still being added.</small><button className="btn ghost" onClick={logout}>LOG OUT</button>{!real && <button className="btn ghost" onClick={() => { localStorage.removeItem(DEMO); location.href = '/' }}>RESET DEMO DATA</button>}</div>
       </>}
     </section>
     {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button></div></div>}
