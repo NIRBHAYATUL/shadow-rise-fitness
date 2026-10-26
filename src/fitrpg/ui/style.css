@@ -42,3 +42,4 @@ input{display:block;width:100%;margin:8px 0;padding:12px;border:1px solid #5560d
 a.btn{display:inline-block;text-decoration:none;text-align:center}
 .vid{margin-top:6px;flex-basis:100%}.vid summary{cursor:pointer;color:#9fb4ff;font-size:.85rem}.vid video{width:100%;max-width:420px;margin-top:6px;border-radius:8px;background:#000}
 .quest li{flex-wrap:wrap;align-items:baseline;column-gap:14px;row-gap:4px}.quest li>span{flex:1 1 55%;min-width:0;overflow-wrap:anywhere}.quest li>b{flex:0 0 auto;text-align:right;white-space:nowrap}.quest li>.vid{flex:0 0 100%;width:100%;order:3}.quest li>.vid video{width:100%;max-width:none}.vid summary{padding:6px 0}
+.quest li>.loop{flex:0 0 100%;width:100%;max-width:420px;border-radius:8px;order:2;background:#000}
