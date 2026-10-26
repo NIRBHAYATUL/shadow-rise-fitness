@@ -91,7 +91,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     await update(g.complete(s!.progress, day, feel, sym)); setStep(null); setFeel(null); setSym(null)
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
-    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice)Also pending: a different avatar image for every level (avatars change in 10 steps with a blend between them), and plans after 1 Nov.</div>
+    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level (avatars change in 10 steps with a blend between them), and plans after 1 Nov.</div>
     <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}</nav>
     <section className="dash">
       {page === 'home' && <>
