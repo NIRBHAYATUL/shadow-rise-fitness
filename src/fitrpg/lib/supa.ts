@@ -28,8 +28,10 @@ export function supabaseBackend(url: string, anonKey: string): Backend {
       return em ? load(em.split('@')[0] ?? '') : null
     },
     async signOut() { await sb.auth.signOut() },
-    async save(_u, patch) {
+    async save(u, patch) {
       const { data: s } = await sb.auth.getUser(); if (!s.user) throw new Error('Not signed in.')
+      // Only ever write to the account that started this save; never to whoever is signed in now.
+      if (s.user.email !== alias(u)) throw new Error('Account changed before saving.')
       const { error } = await sb.from('player_state').upsert({ user_id: s.user.id, ...patch })
       if (error) throw new Error(error.message)
     },
