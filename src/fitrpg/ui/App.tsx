@@ -28,6 +28,8 @@ function Portrait({ h }: { h: Hunter }) { return <img className="art" src={`/ava
 
 export type Page = 'home' | 'today' | 'hunter' | 'progress' | 'settings'
 const NAV: [Page, string, string][] = [['home', '/', 'Home'], ['today', '/today', "Today's Workout"], ['hunter', '/hunter', 'Hunter'], ['progress', '/progress', 'Progress'], ['settings', '/settings', 'Settings']]
+// Saves run one after another so an older write can never land after a newer one.
+let saveChain: Promise<unknown> = Promise.resolve()
 export default function App({ page = 'home' }: { page?: Page }) {
   const [s, setS] = useState<Session | null>(() => (!real && localStorage.getItem(DEMO) ? loadDemo() : cachedSession))
   const [mode, setMode] = useState<'in' | 'up'>('up')
@@ -51,7 +53,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     if (mode === 'up' && p !== p2) return setErr('Passwords do not match.')
     try { const r = await (mode === 'up' ? backend!.signUp(u, p) : backend!.signIn(u, p)); cachedSession = r; setS(r) } catch (e: any) { setErr(e.message) }
   }
-  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); try { await saveAny(s, { progress: pr }) } catch { setSaveErr('Could not save to the server. Check your connection and try again.') } }
+  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); const job = saveChain.then(() => saveAny(s, { progress: pr })); saveChain = job.catch(() => {}); try { await job } catch { setSaveErr('Could not save to the server. Check your connection and try again.') } }
   const lv = useMemo(() => g.levelFromXp(s?.progress.xp ?? 0), [s])
   const band = Math.min(9, Math.floor((lv.level - 1) / 10))
   const [t0, setT0r] = useState<number | null>(() => { const v = Number(lsGet('srf-t0')); return v > 0 ? v : null })
