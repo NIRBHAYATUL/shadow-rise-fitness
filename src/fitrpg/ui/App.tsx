@@ -91,7 +91,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     await update(g.complete(s!.progress, day, feel, sym)); setStep(null); setFeel(null); setSym(null)
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
-    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level (avatars change in 10 steps with a blend between them), and plans after 1 Nov.</div>
+    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level. Only Sung Jinwoo changes with level (10 art steps with a blend between them); the other avatars show one static portrait. Plans after 1 Nov are pending.</div>
     <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}</nav>
     <section className="dash">
       {page === 'home' && <>
@@ -128,7 +128,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
       </>}
       {page === 'settings' && <>
         <div className="card stats"><div className="tag">SETTINGS</div>
-        <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label>        <small>Words on screen are English. Trainer voice demos (Hindi) are still being added.</small><button className="btn ghost" onClick={logout}>LOG OUT</button>{!real && <button className="btn ghost" onClick={() => { localStorage.removeItem(DEMO); location.href = '/' }}>RESET DEMO DATA</button>}</div>
+        <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label>        <small>Words on screen are English. Trainer voice demos are in Hindi, with English captions.</small><button className="btn ghost" onClick={logout}>LOG OUT</button>{!real && <button className="btn ghost" onClick={() => { localStorage.removeItem(DEMO); location.href = '/' }}>RESET DEMO DATA</button>}</div>
       </>}
     </section>
     {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button></div></div>}
