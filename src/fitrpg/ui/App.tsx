@@ -44,7 +44,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
   const [mode, setMode] = useState<'in' | 'up'>('up')
   const [u, setU] = useState(''); const [p, setP] = useState(''); const [p2, setP2] = useState('')
   const [err, setErr] = useState('')
-  const [, setTick] = useState(0)
+  const [tk, setTick] = useState(0)
   const status = useSyncExternalStore(subStatus, () => saveStatus)
   useEffect(() => { const i = setInterval(() => setTick(x => x + 1), 30000); return () => clearInterval(i) }, [])
   const [tab, setTab] = useState<'all' | 'M' | 'F' | 'Hunter' | 'Monarch'>('all')
@@ -53,9 +53,12 @@ export default function App({ page = 'home' }: { page?: Page }) {
   const setMotion = (v: boolean) => { setMotionRaw(v); lsSet('srf-motion', v ? null : 'off') }
   const [saveErr, setSaveErr] = useState('')
   const [step, setStep] = useState<null | 'feel' | 'symptom'>(null)
+  const [qDay, setQDay] = useState<string | null>(null) // the day the quest popup was opened for
+  const [notice, setNotice] = useState('')
   const [feel, setFeel] = useState<g.Feel | null>(null)
   const [sym, setSym] = useState<g.Symptom | null>(null)
 
+  useEffect(() => { if (step && qDay && qDay !== today()) { setStep(null); setFeel(null); setSym(null); setQDay(null); setNotice('The date changed while the quest popup was open, so it was cancelled. Nothing was awarded. Start again for today.') } }, [tk, step, qDay])
   useEffect(() => { if (cachedSession) return; backend?.restore().then(r => { if (r) { cachedSession = r; setS(r) } else { cachedSession = null; setS(null) } }).catch(() => {}) }, [])
   async function logout() { await Promise.race([saveChain.catch(() => {}), new Promise(r => setTimeout(r, 8000))]); if ((pendingSaves > 0 || saveStatus === 'failed') && !window.confirm('Your last change has not been saved to the server. If you log out now it will be lost. Log out anyway?')) return; await backend?.signOut(); sessionGen++; pendingSaves = 0; setStatus('idle'); setSaveErr(''); cachedSession = null; lsSet('srf-t0', null); setS(null); setU(''); setP(''); setP2('') }
   async function auth() {
@@ -101,7 +104,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     </section></main>)
   }
 
-  const h = ROSTER.find(x => x.id === s.avatar)!
+  const h = ROSTER.find(x => x.id === s.avatar) ?? ROSTER.find(x => x.id === 'sung-jinwoo')! // unknown stored id: show a placeholder, never change the stored choice
   const day = today()
   const done = s.progress.doneDays.includes(day) || s.progress.doneDays.includes('rest:' + day)
   const plan = dayPlan(day)
@@ -109,11 +112,13 @@ export default function App({ page = 'home' }: { page?: Page }) {
   async function finish() {
     if (!feel) return
     if (g.needsSymptomStep(feel) && !sym) return setStep('symptom')
-    await update(g.complete(s!.progress, day, feel, sym)); setStep(null); setFeel(null); setSym(null)
+    if (qDay !== day) { setStep(null); setFeel(null); setSym(null); setQDay(null); return setNotice('The date changed while the quest popup was open, so it was cancelled. Nothing was awarded. Start again for today.') }
+    await update(g.complete(s!.progress, qDay, feel, sym)); setStep(null); setFeel(null); setSym(null); setQDay(null)
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
     <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level. Only Sung Jinwoo changes with level (10 art steps with a blend between them); the other avatars show one static portrait. Plans after 1 Nov are pending.</div>
     {saveErr && <div className="err" role="alert">{saveErr}</div>}
+    {notice && <div className="err" role="status">{notice}</div>}
     {status !== 'idle' && !saveErr && <div className="srf-save" role="status">{status === 'saving' ? 'Saving to server...' : status === 'saved' ? 'Saved to server.' : 'Save failed.'}</div>}
     <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}</nav>
     <section className="dash">
@@ -129,9 +134,9 @@ export default function App({ page = 'home' }: { page?: Page }) {
       {page === 'today' && <>
       <div className="card quest"><div className="tag">DAILY QUEST - {day} - {plan.label}</div>
         <ul>{plan.moves.map(([n, r]) => <li key={n}><span>{n}</span><b>{r}</b>{videoFor(n) && motion && <img className="loop" loading="lazy" src={videoFor(n)!.replace('-hi.mp4', '-loop.gif')} alt={`${n}: silent movement loop`} />}{videoFor(n) && <details className="vid"><summary>Watch demo (Hindi voice, English captions)</summary><video controls preload="none" playsInline src={videoFor(n)} /></details>}</li>)}{!plan.moves.length && <li><span>{plan.kind === 'before' ? 'Your plan starts on Tue 27 Oct 2026.' : plan.kind === 'none' ? 'Next plan is pending. Nothing harder is unlocked by XP.' : 'No training today. Rest counts, no penalty.'}</span></li>}</ul>
-        <div className="row"><button className="btn" disabled={done || !canTrain} onClick={() => { update(g.startPending(s.progress, day)); setStep('feel') }}>{done ? 'DONE TODAY' : 'TARGET DONE'}</button>
+        <div className="row"><button className="btn" disabled={done || !canTrain} onClick={() => { setNotice(''); setQDay(day); update(g.startPending(s.progress, day)); setStep('feel') }}>{done ? 'DONE TODAY' : 'TARGET DONE'}</button>
           <button className="btn ghost" disabled={done} onClick={() => update(g.rest(s.progress, day))}>REST TODAY</button>
-          <button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null) }}>STOP</button></div></div>
+          <button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>
       <div className="card quest"><div className="tag">SESSION</div>
         <div className="row"><button className="btn" onClick={() => { if (t0 === null) setT0(Date.now()); else { update(g.addSession(s.progress, day, (Date.now() - t0) / 1000)); setT0(null) } }}>{t0 === null ? 'START TIMER' : `STOP ${Math.floor((Date.now() - t0) / 60000)}:${String(Math.floor(((Date.now() - t0) / 1000) % 60)).padStart(2, '0')}`}</button>
           <button className="btn ghost" onClick={() => update(g.setSets(s.progress, day, (s.progress.sets?.[day] ?? 0) - 1))}>-</button><b>Sets today: {s.progress.sets?.[day] ?? 0}</b><button className="btn ghost" onClick={() => update(g.setSets(s.progress, day, (s.progress.sets?.[day] ?? 0) + 1))}>+</button></div>
@@ -154,8 +159,8 @@ export default function App({ page = 'home' }: { page?: Page }) {
         <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label>        <small>Words on screen are English. Trainer voice demos are in Hindi, with English captions.</small><button className="btn ghost" onClick={logout}>LOG OUT</button>{!real && <button className="btn ghost" onClick={() => { localStorage.removeItem(DEMO); location.href = '/' }}>RESET DEMO DATA</button>}</div>
       </>}
     </section>
-    {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null) }}>STOP</button></div></div>}
+    {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>}
     {step === 'symptom' && <div className="modal"><div className="card"><h3>ANY OF THESE?</h3>{([['pain', 'Pain'], ['dizziness', 'Dizziness'], ['breathing', 'Breathing feels unusual'], ['none', 'None of these']] as const).map(([k, l]) => <button key={k} className={'opt' + (sym === k ? ' on' : '')} onClick={() => setSym(k)}>{l}</button>)}
-      {sym && sym !== 'none' && <div className="err">Stop for today. Rest, and check in with a doctor if it continues.</div>}<button className="btn" disabled={!sym} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null) }}>STOP</button></div></div>}
+      {sym && sym !== 'none' && <div className="err">Stop for today. Rest, and check in with a doctor if it continues.</div>}<button className="btn" disabled={!sym} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>}
   </main>)
 }
