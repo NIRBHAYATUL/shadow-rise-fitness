@@ -17,7 +17,7 @@ const backend: Backend | null = supabaseBackend(SB_URL, SB_KEY)
 const DEMO = 'fitrpg-demo'
 const loadDemo = (): Session => { try { return JSON.parse(localStorage.getItem(DEMO) || '') } catch { return { username: 'demo', avatar: null, progress: g.emptyProgress() } } }
 const saveAny = async (s: Session, patch: { avatar?: string; progress?: g.Progress }) => { if (backend) await backend.save(s.username, patch); else localStorage.setItem(DEMO, JSON.stringify({ ...s, ...patch })) }
-const VIDEOS: [RegExp, string][] = [[/room walk/i, '/hindi/room-walk-hi.mp4'], [/calf raise/i, '/hindi/calf-raise-hi.mp4'], [/bottle curl/i, '/hindi/bottle-curl-hi.mp4'], [/cool-down/i, '/hindi/cool-down-hi.mp4'], [/^bridge/i, '/hindi/bridge-hi.mp4'], [/wall push-up/i, '/hindi/wall-pushup-hi.mp4'], [/mini-squat/i, '/hindi/mini-squat-hi.mp4']]
+const VIDEOS: [RegExp, string][] = [[/room walk/i, '/hindi/room-walk-hi.mp4'], [/calf raise/i, '/hindi/calf-raise-hi.mp4'], [/bottle curl/i, '/hindi/bottle-curl-hi.mp4'], [/cool-down/i, '/hindi/cool-down-hi.mp4'], [/^bridge/i, '/hindi/bridge-hi.mp4'], [/wall push-up/i, '/hindi/wall-pushup-hi.mp4'], [/mini-squat/i, '/hindi/mini-squat-hi.mp4'], [/bird-dog/i, '/hindi/bird-dog-hi.mp4']]
 const videoFor = (n: string) => VIDEOS.find(([r]) => r.test(n))?.[1]
 const today = () => new Date().toLocaleDateString('en-CA')
 
@@ -91,7 +91,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     await update(g.complete(s!.progress, day, feel, sym)); setStep(null); setFeel(null); setSym(null)
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
-    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for 7 moves (room walk, mini-squat, bridge, wall push-up, calf raise, bottle curl, cool-down; bird-dog is still being fixed); the rest are still being added. Also pending: a different avatar image for every level (avatars change in 10 steps with a blend between them), and plans after 1 Nov.</div>
+    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice)Also pending: a different avatar image for every level (avatars change in 10 steps with a blend between them), and plans after 1 Nov.</div>
     <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}</nav>
     <section className="dash">
       {page === 'home' && <>
