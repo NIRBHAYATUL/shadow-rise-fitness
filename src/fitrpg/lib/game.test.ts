@@ -52,3 +52,18 @@ describe('roster filters', () => {
   it('has both genders and monarchs', () => { expect(filterRoster('F').length).toBeGreaterThan(0); expect(filterRoster('Monarch').length).toBeGreaterThan(0) })
 })
 describe('credentials rules', () => { it('checks username and password', () => { expect(checkCreds('ab', 'longenough1')).not.toBeNull(); expect(checkCreds('abc', 'short')).not.toBeNull(); expect(checkCreds('abc_1', 'longenough1')).toBeNull() }) })
+import { dayPlan } from './plan'
+import { bodyBlend, titleFor as tf } from './levels'
+describe('plan and body', () => {
+  it('is date aware', () => {
+    expect(dayPlan('2026-10-26').kind).toBe('before')
+    expect(dayPlan('2026-10-27').label).toBe('Legs')
+    expect(dayPlan('2026-10-28').label).toBe('Room walk')
+    expect(dayPlan('2026-11-01').kind).toBe('rest'); expect(dayPlan('2026-11-02').kind).toBe('none')
+  })
+  it('changes body image at every level 1-100', () => {
+    const key = (l: number) => { const b = bodyBlend(l); return b.a + ':' + b.mix + ':' + b.aura }
+    const keys = new Set<string>(); for (let l = 1; l <= 100; l++) keys.add(key(l)); expect(keys.size).toBe(100)
+    expect(bodyBlend(100).b).toBeNull(); expect(tf(100)).toBe('Full Shadow Monarch')
+  })
+})
