@@ -40,3 +40,4 @@ input{display:block;width:100%;margin:8px 0;padding:12px;border:1px solid #5560d
 .nav a{padding:8px 12px;border:1px solid #4b3c8c;border-radius:8px;color:#cfc4ff;text-decoration:none;font-size:14px}
 .nav a.on{background:#4b3c8c;color:#fff}
 a.btn{display:inline-block;text-decoration:none;text-align:center}
+.vid{margin-top:6px;flex-basis:100%}.vid summary{cursor:pointer;color:#9fb4ff;font-size:.85rem}.vid video{width:100%;max-width:420px;margin-top:6px;border-radius:8px;background:#000}

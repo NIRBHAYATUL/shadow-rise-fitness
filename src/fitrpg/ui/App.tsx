@@ -17,6 +17,8 @@ const backend: Backend | null = supabaseBackend(SB_URL, SB_KEY)
 const DEMO = 'fitrpg-demo'
 const loadDemo = (): Session => { try { return JSON.parse(localStorage.getItem(DEMO) || '') } catch { return { username: 'demo', avatar: null, progress: g.emptyProgress() } } }
 const saveAny = async (s: Session, patch: { avatar?: string; progress?: g.Progress }) => { if (backend) await backend.save(s.username, patch); else localStorage.setItem(DEMO, JSON.stringify({ ...s, ...patch })) }
+const VIDEOS: [RegExp, string][] = [[/room walk/i, '/hindi/room-walk-hi.mp4'], [/calf raise/i, '/hindi/calf-raise-hi.mp4'], [/bottle curl/i, '/hindi/bottle-curl-hi.mp4'], [/cool-down/i, '/hindi/cool-down-hi.mp4']]
+const videoFor = (n: string) => VIDEOS.find(([r]) => r.test(n))?.[1]
 const today = () => new Date().toLocaleDateString('en-CA')
 
 function Portrait({ h }: { h: Hunter }) { return <img className="art" src={`/avatars/${h.id}.jpg`} alt={h.name} /> }
@@ -74,7 +76,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
       <div className="tabs">{(['all', 'M', 'F', 'Hunter', 'Monarch'] as const).map(t => <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{({ all: 'All', M: 'Male', F: 'Female', Hunter: 'S-Rank Hunters', Monarch: 'Monarchs' })[t]}</button>)}</div>
       <div className="grid">{list.map(h => <button key={h.id} className={'tile' + (pick === h.id ? ' sel' : '')} onClick={() => setPick(h.id)}>
         <Portrait h={h} /><b>{h.name}</b><i>{h.group}{h.note ? ' - ' + h.note : ''}</i></button>)}</div>
-      <button className="btn" disabled={!pick} onClick={async () => { await saveAny(s, { avatar: pick! }); setS({ ...s, avatar: pick }) }}>CONFIRM AVATAR</button>
+      <button className="btn ghost" onClick={logout}>LOG OUT</button> <button className="btn" disabled={!pick} onClick={async () => { await saveAny(s, { avatar: pick! }); setS({ ...s, avatar: pick }) }}>CONFIRM AVATAR</button>
     </section></main>)
   }
 
@@ -89,7 +91,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     await update(g.complete(s!.progress, day, feel, sym)); setStep(null); setFeel(null); setSym(null)
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
-    <div className="demo" role="status">Early version. Accounts and server saving are live. Still being added: Hindi trainer demo videos, a different avatar image for every level (avatars change in 10 steps with a blend between them), and plans after 1 Nov.</div>
+    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for 4 moves (room walk, calf raise, bottle curl, cool-down); the rest are still being added. Also pending: a different avatar image for every level (avatars change in 10 steps with a blend between them), and plans after 1 Nov.</div>
     <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}</nav>
     <section className="dash">
       {page === 'home' && <>
@@ -103,7 +105,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
       </>}
       {page === 'today' && <>
       <div className="card quest"><div className="tag">DAILY QUEST - {day} - {plan.label}</div>
-        <ul>{plan.moves.map(([n, r]) => <li key={n}><span>{n}</span><b>{r}</b></li>)}{!plan.moves.length && <li><span>{plan.kind === 'before' ? 'Your plan starts on Tue 27 Oct 2026.' : plan.kind === 'none' ? 'Next plan is pending. Nothing harder is unlocked by XP.' : 'No training today. Rest counts, no penalty.'}</span></li>}</ul>
+        <ul>{plan.moves.map(([n, r]) => <li key={n}><span>{n}</span><b>{r}</b>{videoFor(n) && <details className="vid"><summary>Watch demo (Hindi voice, English captions)</summary><video controls preload="none" playsInline src={videoFor(n)} /></details>}</li>)}{!plan.moves.length && <li><span>{plan.kind === 'before' ? 'Your plan starts on Tue 27 Oct 2026.' : plan.kind === 'none' ? 'Next plan is pending. Nothing harder is unlocked by XP.' : 'No training today. Rest counts, no penalty.'}</span></li>}</ul>
         <div className="row"><button className="btn" disabled={done || !canTrain} onClick={() => { update(g.startPending(s.progress, day)); setStep('feel') }}>{done ? 'DONE TODAY' : 'TARGET DONE'}</button>
           <button className="btn ghost" disabled={done} onClick={() => update(g.rest(s.progress, day))}>REST TODAY</button>
           <button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null) }}>STOP</button></div></div>
