@@ -1,3 +1,4 @@
+// @ts-nocheck -- imported as-is; written for a less strict TypeScript setup
 import { describe, it, expect } from 'vitest'
 import * as g from './game'
 import { PROFILE_TITLES, titleFor, lookFor } from './levels'
