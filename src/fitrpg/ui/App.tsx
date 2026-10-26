@@ -4,7 +4,8 @@ import { Backend, Session } from '../lib/store'
 import { supabaseBackend } from '../lib/supa'
 import { ROSTER, filterRoster, Hunter } from '../lib/roster'
 import * as g from '../lib/game'
-import { titleFor, PROFILE_TITLES, ANIME_ANCHORS } from '../lib/levels'
+import { titleFor, PROFILE_TITLES, ANIME_ANCHORS, bodyBlend, FULLBODY } from '../lib/levels'
+import { dayPlan } from '../lib/plan'
 
 const env = import.meta.env
 const real = !!env.VITE_SUPABASE_URL
@@ -13,7 +14,6 @@ const DEMO = 'fitrpg-demo'
 const loadDemo = (): Session => { try { return JSON.parse(localStorage.getItem(DEMO) || '') } catch { return { username: 'demo', avatar: null, progress: g.emptyProgress() } } }
 const saveAny = async (s: Session, patch: { avatar?: string; progress?: g.Progress }) => { if (backend) await backend.save(s.username, patch); else localStorage.setItem(DEMO, JSON.stringify({ ...s, ...patch })) }
 const today = () => new Date().toLocaleDateString('en-CA')
-const QUEST = [['Mini-squat', '1 x 5'], ['Wall push-up', '1 x 5'], ['Bridge', '1 x 5'], ['Easy bird-dog, one limb at a time', '3 each']]
 
 function Portrait({ h }: { h: Hunter }) { return <img className="art" src={`/avatars/${h.id}.jpg`} alt={h.name} /> }
 
@@ -72,14 +72,17 @@ export default function App() {
   const h = ROSTER.find(x => x.id === s.avatar)!
   const day = today()
   const done = s.progress.doneDays.includes(day)
+  const plan = dayPlan(day)
+  const canTrain = plan.kind === 'train'
   async function finish() {
     if (!feel) return
     if (g.needsSymptomStep(feel) && !sym) return setStep('symptom')
     await update(g.complete(s!.progress, day, feel, sym)); setStep(null); setFeel(null); setSym(null)
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
+    {!real && <div className="demo" role="status">DEMO MODE: progress is saved in this browser only, not on a server. Not finished yet: server login and saving, Hindi trainer demos, a different avatar image for every level (avatars change in 10 steps with a blend between them), plans after 1 Nov.</div>}
     <section className="dash">
-      <div className="card hero"><figure className="now" style={{ ['--glow' as any]: lv.level / 100 }}>{h.id === 'sung-jinwoo' ? <img className="art big" src={`/avatars/jinwoo-anime/${ANIME_ANCHORS[band]}.jpg`} alt="Sung Jinwoo anime" /> : <Portrait h={h} />}<figcaption>{h.name}</figcaption></figure>
+      <div className="card hero"><figure className="now" style={{ ['--glow' as any]: lv.level / 100 }}>{h.id === 'sung-jinwoo' ? <div className="body" data-testid="fullbody">{(() => { const b = bodyBlend(lv.level); return <div style={{ filter: `drop-shadow(0 0 ${4 + b.aura * 22}px rgba(140,90,255,${0.2 + b.aura * 0.6}))` }}><img className="art body" src={`/body/jinwoo-${String(b.a).padStart(2, '0')}.webp`} alt={`Sung Jinwoo full body, level ${lv.level}`} />{b.b && <img className="art body over" style={{ opacity: b.mix }} src={`/body/jinwoo-${String(b.b).padStart(2, '0')}.webp`} alt="" />}</div> })()}<img className="face" src={`/avatars/jinwoo-anime/${ANIME_ANCHORS[band]}.jpg`} alt="Anime face" /></div> : FULLBODY[h.id] ? <img className="art body" src={FULLBODY[h.id]} alt={h.name + ' full body'} /> : <Portrait h={h} />}<figcaption>{h.name}</figcaption></figure>
         <div className="ranks"><span className="rank">{titleFor(lv.level)}</span><span className="lvl">LV {lv.level}</span>{s.progress.title && <span className="title-badge">{s.progress.title}</span>}</div></div>
       <div className="card stats"><div className="tag">[ SYSTEM ] {h.name.toUpperCase()}</div><h2>LEVEL {lv.level}</h2>
         <div className="bar"><div style={{ width: `${(lv.into / lv.need) * 100}%` }} /></div><small>XP {lv.into} / {lv.need}</small>
@@ -87,9 +90,9 @@ export default function App() {
         <label className="mo">Title <select value={s.progress.title ?? ''} onChange={e => update({ ...s.progress, title: e.target.value || undefined })}><option value="">None</option>{PROFILE_TITLES.filter(t => lv.level >= t.at).map(t => <option key={t.name} value={t.name}>{t.name}</option>)}</select></label>
         <small>Next title: {(PROFILE_TITLES.find(t => lv.level < t.at) ?? { name: 'all unlocked', at: 0 }).name}{PROFILE_TITLES.find(t => lv.level < t.at) ? ` at level ${PROFILE_TITLES.find(t => lv.level < t.at)!.at}` : ''}</small>
         <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label></div>
-      <div className="card quest"><div className="tag">DAILY QUEST - {day}</div>
-        <ul>{QUEST.map(([n, r]) => <li key={n}><span>{n}</span><b>{r}</b></li>)}</ul>
-        <div className="row"><button className="btn" disabled={done} onClick={() => { update(g.startPending(s.progress, day)); setStep('feel') }}>{done ? 'DONE TODAY' : 'TARGET DONE'}</button>
+      <div className="card quest"><div className="tag">DAILY QUEST - {day} - {plan.label}</div>
+        <ul>{plan.moves.map(([n, r]) => <li key={n}><span>{n}</span><b>{r}</b></li>)}{!plan.moves.length && <li><span>{plan.kind === 'before' ? 'Your plan starts on Tue 27 Oct 2026.' : plan.kind === 'none' ? 'Next plan is pending. Nothing harder is unlocked by XP.' : 'No training today. Rest counts, no penalty.'}</span></li>}</ul>
+        <div className="row"><button className="btn" disabled={done || !canTrain} onClick={() => { update(g.startPending(s.progress, day)); setStep('feel') }}>{done ? 'DONE TODAY' : 'TARGET DONE'}</button>
           <button className="btn ghost" disabled={done} onClick={() => update(g.rest(s.progress, day))}>REST TODAY</button>
           <button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null) }}>STOP</button></div></div>
       <div className="card quest"><div className="tag">SESSION</div>
