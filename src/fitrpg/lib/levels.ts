@@ -1,11 +1,10 @@
-// @ts-nocheck -- imported as-is; written for a less strict TypeScript setup
 // 100-level avatar progression. Every level has its own look parameters, computed in code.
 // Titles are original placeholders, not claimed canon. Official art, when supplied, overrides at milestone levels.
 export const MAX_LEVEL = 100
 export const MILESTONES = [1, 11, 21, 31, 41, 51, 61, 71, 81, 91] as const
 // User-chosen custom site ranks (not claimed canon). Level thresholds are a placeholder: 10 levels per rank.
 export const TITLES = ['E-Rank', 'D-Rank', 'C-Rank', 'B-Rank', 'A-Rank', 'S-Rank', 'SS-Rank', 'SSS-Rank', 'Half Shadow Monarch', 'Full Shadow Monarch']
-export function titleFor(level: number): string { return TITLES[Math.min(9, Math.floor((Math.max(1, level) - 1) / 10))] }
+export function titleFor(level: number): string { return TITLES[Math.min(9, Math.floor((Math.max(1, level) - 1) / 10))]! }
 export function milestoneFor(level: number): number { let m = 1; for (const x of MILESTONES) if (level >= x) m = x; return m }
 export interface Look { shoulder: number; waist: number; arm: number; leg: number; lean: number; hair: number; coat: number; aura: number; marks: number; hue: number }
 // Lean-athletic only: width grows slowly and caps, never bulky.

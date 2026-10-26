@@ -1,4 +1,3 @@
-// @ts-nocheck -- imported as-is; written for a less strict TypeScript setup
 // Week 1 only (27 Oct to 1 Nov 2026), from the trainer's plan. Nothing is prescribed after 1 Nov 2026.
 export const PLAN_START = '2026-10-27'
 export type Move = [string, string]

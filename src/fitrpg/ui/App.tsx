@@ -1,5 +1,6 @@
-// @ts-nocheck -- imported as-is; written for a less strict TypeScript setup
+// @ts-nocheck
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { Backend, Session } from '../lib/store'
 import { supabaseBackend } from '../lib/supa'
 import { ROSTER, filterRoster, Hunter } from '../lib/roster'
@@ -17,7 +18,9 @@ const today = () => new Date().toLocaleDateString('en-CA')
 
 function Portrait({ h }: { h: Hunter }) { return <img className="art" src={`/avatars/${h.id}.jpg`} alt={h.name} /> }
 
-export default function App() {
+export type Page = 'home' | 'today' | 'hunter' | 'progress' | 'settings'
+const NAV: [Page, string, string][] = [['home', '/', 'Home'], ['today', '/today', "Today's Workout"], ['hunter', '/hunter', 'Hunter'], ['progress', '/progress', 'Progress'], ['settings', '/settings', 'Settings']]
+export default function App({ page = 'home' }: { page?: Page }) {
   const [s, setS] = useState<Session | null>(() => (!real && localStorage.getItem(DEMO) ? loadDemo() : null))
   const [mode, setMode] = useState<'in' | 'up'>('up')
   const [u, setU] = useState(''); const [p, setP] = useState(''); const [p2, setP2] = useState('')
@@ -81,15 +84,18 @@ export default function App() {
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
     {!real && <div className="demo" role="status">DEMO MODE: progress is saved in this browser only, not on a server. Not finished yet: server login and saving, Hindi trainer demos, a different avatar image for every level (avatars change in 10 steps with a blend between them), plans after 1 Nov.</div>}
+    <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}</nav>
     <section className="dash">
+      {page === 'home' && <>
       <div className="card hero"><figure className="now" style={{ ['--glow' as any]: lv.level / 100 }}>{h.id === 'sung-jinwoo' ? <div className="body" data-testid="fullbody">{(() => { const b = bodyBlend(lv.level); return <div style={{ filter: `drop-shadow(0 0 ${4 + b.aura * 22}px rgba(140,90,255,${0.2 + b.aura * 0.6}))` }}><img className="art body" src={`/body/jinwoo-${String(b.a).padStart(2, '0')}.webp`} alt={`Sung Jinwoo full body, level ${lv.level}`} />{b.b && <img className="art body over" style={{ opacity: b.mix }} src={`/body/jinwoo-${String(b.b).padStart(2, '0')}.webp`} alt="" />}</div> })()}<img className="face" src={`/avatars/jinwoo-anime/${ANIME_ANCHORS[band]}.jpg`} alt="Anime face" /></div> : FULLBODY[h.id] ? <img className="art body" src={FULLBODY[h.id]} alt={h.name + ' full body'} /> : <Portrait h={h} />}<figcaption>{h.name}</figcaption></figure>
         <div className="ranks"><span className="rank">{titleFor(lv.level)}</span><span className="lvl">LV {lv.level}</span>{s.progress.title && <span className="title-badge">{s.progress.title}</span>}</div></div>
       <div className="card stats"><div className="tag">[ SYSTEM ] {h.name.toUpperCase()}</div><h2>LEVEL {lv.level}</h2>
         <div className="bar"><div style={{ width: `${(lv.into / lv.need) * 100}%` }} /></div><small>XP {lv.into} / {lv.need}</small>
         
-        <label className="mo">Title <select value={s.progress.title ?? ''} onChange={e => update({ ...s.progress, title: e.target.value || undefined })}><option value="">None</option>{PROFILE_TITLES.filter(t => lv.level >= t.at).map(t => <option key={t.name} value={t.name}>{t.name}</option>)}</select></label>
-        <small>Next title: {(PROFILE_TITLES.find(t => lv.level < t.at) ?? { name: 'all unlocked', at: 0 }).name}{PROFILE_TITLES.find(t => lv.level < t.at) ? ` at level ${PROFILE_TITLES.find(t => lv.level < t.at)!.at}` : ''}</small>
-        <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label></div>
+      </div>
+        <div className="card quest"><div className="tag">TODAY - {plan.label}</div><p>{canTrain ? (done ? 'Quest complete. Nice work.' : 'Your quest is ready.') : 'No training today. Rest counts, no penalty.'}</p><Link className="btn" to={'/today' as any}>OPEN TODAY'S WORKOUT</Link></div>
+      </>}
+      {page === 'today' && <>
       <div className="card quest"><div className="tag">DAILY QUEST - {day} - {plan.label}</div>
         <ul>{plan.moves.map(([n, r]) => <li key={n}><span>{n}</span><b>{r}</b></li>)}{!plan.moves.length && <li><span>{plan.kind === 'before' ? 'Your plan starts on Tue 27 Oct 2026.' : plan.kind === 'none' ? 'Next plan is pending. Nothing harder is unlocked by XP.' : 'No training today. Rest counts, no penalty.'}</span></li>}</ul>
         <div className="row"><button className="btn" disabled={done || !canTrain} onClick={() => { update(g.startPending(s.progress, day)); setStep('feel') }}>{done ? 'DONE TODAY' : 'TARGET DONE'}</button>
@@ -99,6 +105,24 @@ export default function App() {
         <div className="row"><button className="btn" onClick={() => { if (t0 === null) setT0(Date.now()); else { update(g.addSession(s.progress, day, (Date.now() - t0) / 1000)); setT0(null) } }}>{t0 === null ? 'START TIMER' : `STOP ${Math.floor((Date.now() - t0) / 60000)}:${String(Math.floor(((Date.now() - t0) / 1000) % 60)).padStart(2, '0')}`}</button>
           <button className="btn ghost" onClick={() => update(g.setSets(s.progress, day, (s.progress.sets?.[day] ?? 0) - 1))}>-</button><b>Sets today: {s.progress.sets?.[day] ?? 0}</b><button className="btn ghost" onClick={() => update(g.setSets(s.progress, day, (s.progress.sets?.[day] ?? 0) + 1))}>+</button></div>
         <div className="tag">RECENT SESSIONS</div><ul>{(s.progress.sessions ?? []).slice(-7).reverse().map((x, i) => <li key={i}><span>{x.day}</span><b>{Math.floor(x.seconds / 60)} min {x.seconds % 60} s</b></li>)}{!(s.progress.sessions ?? []).length && <li><span>No sessions yet</span></li>}</ul></div>
+      </>}
+      {page === 'hunter' && <>
+      <div className="card hero"><figure className="now" style={{ ['--glow' as any]: lv.level / 100 }}>{h.id === 'sung-jinwoo' ? <div className="body" data-testid="fullbody">{(() => { const b = bodyBlend(lv.level); return <div style={{ filter: `drop-shadow(0 0 ${4 + b.aura * 22}px rgba(140,90,255,${0.2 + b.aura * 0.6}))` }}><img className="art body" src={`/body/jinwoo-${String(b.a).padStart(2, '0')}.webp`} alt={`Sung Jinwoo full body, level ${lv.level}`} />{b.b && <img className="art body over" style={{ opacity: b.mix }} src={`/body/jinwoo-${String(b.b).padStart(2, '0')}.webp`} alt="" />}</div> })()}<img className="face" src={`/avatars/jinwoo-anime/${ANIME_ANCHORS[band]}.jpg`} alt="Anime face" /></div> : FULLBODY[h.id] ? <img className="art body" src={FULLBODY[h.id]} alt={h.name + ' full body'} /> : <Portrait h={h} />}<figcaption>{h.name}</figcaption></figure>
+        <div className="ranks"><span className="rank">{titleFor(lv.level)}</span><span className="lvl">LV {lv.level}</span>{s.progress.title && <span className="title-badge">{s.progress.title}</span>}</div></div>
+        <div className="card stats"><div className="tag">[ SYSTEM ] TITLES</div><h2>{titleFor(lv.level)}</h2>
+        <label className="mo">Title <select value={s.progress.title ?? ''} onChange={e => update({ ...s.progress, title: e.target.value || undefined })}><option value="">None</option>{PROFILE_TITLES.filter(t => lv.level >= t.at).map(t => <option key={t.name} value={t.name}>{t.name}</option>)}</select></label>
+        <small>Next title: {(PROFILE_TITLES.find(t => lv.level < t.at) ?? { name: 'all unlocked', at: 0 }).name}{PROFILE_TITLES.find(t => lv.level < t.at) ? ` at level ${PROFILE_TITLES.find(t => lv.level < t.at)!.at}` : ''}</small>
+        <small>Titles unlocked: {PROFILE_TITLES.filter(t => lv.level >= t.at).length} / {PROFILE_TITLES.length}</small></div>
+      </>}
+      {page === 'progress' && <>
+        <div className="card stats"><div className="tag">PROGRESS</div><h2>LEVEL {lv.level}</h2><div className="bar"><div style={{ width: `${(lv.into / lv.need) * 100}%` }} /></div><small>XP {lv.into} / {lv.need}</small><small>Days completed: {s.progress.doneDays.length}</small></div>
+        <div className="card quest"><div className="tag">RECENT SESSIONS</div><ul>{(s.progress.sessions ?? []).slice(-14).reverse().map((x, i) => <li key={i}><span>{x.day}</span><b>{Math.floor(x.seconds / 60)} min {x.seconds % 60} s</b></li>)}{!(s.progress.sessions ?? []).length && <li><span>No sessions yet</span></li>}</ul></div>
+      </>}
+      {page === 'settings' && <>
+        <div className="card stats"><div className="tag">SETTINGS</div>
+        <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label>        <small>Words on screen are English. Trainer voice demos (Hindi) are still being added.</small>{!real && <button className="btn ghost" onClick={() => { localStorage.removeItem(DEMO); location.href = '/' }}>RESET DEMO DATA</button>}</div>
+        <div className="card quest"><div className="tag">ABOUT</div><p>Shadow Rise Fitness. XP and levels are for fun only and never change what you should do. Stop any time.</p></div>
+      </>}
     </section>
     {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button></div></div>}
     {step === 'symptom' && <div className="modal"><div className="card"><h3>ANY OF THESE?</h3>{([['pain', 'Pain'], ['dizziness', 'Dizziness'], ['breathing', 'Breathing feels unusual'], ['none', 'None of these']] as const).map(([k, l]) => <button key={k} className={'opt' + (sym === k ? ' on' : '')} onClick={() => setSym(k)}>{l}</button>)}

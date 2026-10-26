@@ -1,4 +1,3 @@
-// @ts-nocheck -- imported as-is; written for a less strict TypeScript setup
 import { describe, it, expect } from 'vitest'
 import * as g from './game'
 import { PROFILE_TITLES, titleFor, lookFor } from './levels'
@@ -33,7 +32,7 @@ describe('sessions, sets and titles', () => {
   it('records sessions and sets, ignores tiny timers', () => {
     let p = g.addSession(g.emptyProgress(), 'd1', 3); expect(p.sessions ?? []).toHaveLength(0)
     p = g.addSession(p, 'd1', 600); expect(p.sessions).toEqual([{ day: 'd1', seconds: 600 }])
-    p = g.setSets(p, 'd1', 3); expect(p.sets!.d1).toBe(3); expect(g.setSets(p, 'd1', -4).sets!.d1).toBe(0)
+    p = g.setSets(p, 'd1', 3); expect(p.sets!['d1']).toBe(3); expect(g.setSets(p, 'd1', -4).sets!['d1']).toBe(0)
   })
   it('completing keeps title, sessions and sets', () => {
     const p = { ...g.emptyProgress(), title: 'Firewalker' }; expect(g.complete(p, 'd1', 'easy', null).title).toBe('Firewalker')
