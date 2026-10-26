@@ -121,7 +121,6 @@ export default function App({ page = 'home' }: { page?: Page }) {
       {page === 'settings' && <>
         <div className="card stats"><div className="tag">SETTINGS</div>
         <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label>        <small>Words on screen are English. Trainer voice demos (Hindi) are still being added.</small>{!real && <button className="btn ghost" onClick={() => { localStorage.removeItem(DEMO); location.href = '/' }}>RESET DEMO DATA</button>}</div>
-        <div className="card quest"><div className="tag">ABOUT</div><p>Shadow Rise Fitness. XP and levels are for fun only and never change what you should do. Stop any time.</p></div>
       </>}
     </section>
     {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button></div></div>}
