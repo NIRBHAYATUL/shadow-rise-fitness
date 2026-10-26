@@ -33,6 +33,7 @@ let saveChain: Promise<unknown> = Promise.resolve()
 // Server-acknowledged save status shared by every page: 'saving' until the server confirms.
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'failed'
 let pendingSaves = 0
+let sessionGen = 0 // bumps when the user confirms a logout, so a late result from the old account cannot touch the next account's status
 let saveStatus: SaveStatus = 'idle'
 const statusSubs = new Set<() => void>()
 const setStatus = (v: SaveStatus) => { saveStatus = v; statusSubs.forEach(f => f()) }
@@ -56,13 +57,13 @@ export default function App({ page = 'home' }: { page?: Page }) {
   const [sym, setSym] = useState<g.Symptom | null>(null)
 
   useEffect(() => { if (cachedSession) return; backend?.restore().then(r => { if (r) { cachedSession = r; setS(r) } else { cachedSession = null; setS(null) } }).catch(() => {}) }, [])
-  async function logout() { await Promise.race([saveChain.catch(() => {}), new Promise(r => setTimeout(r, 8000))]); if ((pendingSaves > 0 || saveStatus === 'failed') && !window.confirm('Your last change has not been saved to the server. If you log out now it will be lost. Log out anyway?')) return; await backend?.signOut(); cachedSession = null; lsSet('srf-t0', null); setS(null); setU(''); setP(''); setP2('') }
+  async function logout() { await Promise.race([saveChain.catch(() => {}), new Promise(r => setTimeout(r, 8000))]); if ((pendingSaves > 0 || saveStatus === 'failed') && !window.confirm('Your last change has not been saved to the server. If you log out now it will be lost. Log out anyway?')) return; await backend?.signOut(); sessionGen++; pendingSaves = 0; setStatus('idle'); setSaveErr(''); cachedSession = null; lsSet('srf-t0', null); setS(null); setU(''); setP(''); setP2('') }
   async function auth() {
     setErr('')
     if (mode === 'up' && p !== p2) return setErr('Passwords do not match.')
     try { const r = await (mode === 'up' ? backend!.signUp(u, p) : backend!.signIn(u, p)); cachedSession = r; setS(r) } catch (e: any) { setErr(e.message) }
   }
-  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); pendingSaves++; setStatus('saving'); const job = saveChain.then(() => saveAny(s, { progress: pr })); saveChain = job.catch(() => {}); try { await job; pendingSaves--; if (pendingSaves === 0) setStatus('saved') } catch { pendingSaves--; setStatus('failed'); setSaveErr('Could not save to the server. Check your connection and try again.') } }
+  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); const gen = sessionGen; pendingSaves++; setStatus('saving'); const job = saveChain.then(() => saveAny(s, { progress: pr })); saveChain = job.catch(() => {}); try { await job; if (gen !== sessionGen) return; pendingSaves--; if (pendingSaves === 0) setStatus('saved') } catch { if (gen !== sessionGen) return; pendingSaves--; setStatus('failed'); setSaveErr('Could not save to the server. Check your connection and try again.') } }
   const lv = useMemo(() => g.levelFromXp(s?.progress.xp ?? 0), [s])
   const band = Math.min(9, Math.floor((lv.level - 1) / 10))
   const [t0, setT0r] = useState<number | null>(() => { const v = Number(lsGet('srf-t0')); return v > 0 ? v : null })
@@ -153,8 +154,8 @@ export default function App({ page = 'home' }: { page?: Page }) {
         <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label>        <small>Words on screen are English. Trainer voice demos are in Hindi, with English captions.</small><button className="btn ghost" onClick={logout}>LOG OUT</button>{!real && <button className="btn ghost" onClick={() => { localStorage.removeItem(DEMO); location.href = '/' }}>RESET DEMO DATA</button>}</div>
       </>}
     </section>
-    {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button></div></div>}
+    {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null) }}>STOP</button></div></div>}
     {step === 'symptom' && <div className="modal"><div className="card"><h3>ANY OF THESE?</h3>{([['pain', 'Pain'], ['dizziness', 'Dizziness'], ['breathing', 'Breathing feels unusual'], ['none', 'None of these']] as const).map(([k, l]) => <button key={k} className={'opt' + (sym === k ? ' on' : '')} onClick={() => setSym(k)}>{l}</button>)}
-      {sym && sym !== 'none' && <div className="err">Stop for today. Rest, and check in with a doctor if it continues.</div>}<button className="btn" disabled={!sym} onClick={finish}>CONFIRM</button></div></div>}
+      {sym && sym !== 'none' && <div className="err">Stop for today. Rest, and check in with a doctor if it continues.</div>}<button className="btn" disabled={!sym} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null) }}>STOP</button></div></div>}
   </main>)
 }
