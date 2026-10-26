@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Backend, Session } from '../lib/store'
 import { supabaseBackend } from '../lib/supa'
@@ -30,12 +30,21 @@ export type Page = 'home' | 'today' | 'hunter' | 'progress' | 'settings'
 const NAV: [Page, string, string][] = [['home', '/', 'Home'], ['today', '/today', "Today's Workout"], ['hunter', '/hunter', 'Hunter'], ['progress', '/progress', 'Progress'], ['settings', '/settings', 'Settings']]
 // Saves run one after another so an older write can never land after a newer one.
 let saveChain: Promise<unknown> = Promise.resolve()
+// Server-acknowledged save status shared by every page: 'saving' until the server confirms.
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'failed'
+let pendingSaves = 0
+let saveStatus: SaveStatus = 'idle'
+const statusSubs = new Set<() => void>()
+const setStatus = (v: SaveStatus) => { saveStatus = v; statusSubs.forEach(f => f()) }
+const subStatus = (f: () => void) => { statusSubs.add(f); return () => { statusSubs.delete(f) } }
+if (typeof window !== 'undefined') window.addEventListener('beforeunload', e => { if (pendingSaves > 0) { e.preventDefault(); e.returnValue = '' } })
 export default function App({ page = 'home' }: { page?: Page }) {
   const [s, setS] = useState<Session | null>(() => (!real && localStorage.getItem(DEMO) ? loadDemo() : cachedSession))
   const [mode, setMode] = useState<'in' | 'up'>('up')
   const [u, setU] = useState(''); const [p, setP] = useState(''); const [p2, setP2] = useState('')
   const [err, setErr] = useState('')
   const [, setTick] = useState(0)
+  const status = useSyncExternalStore(subStatus, () => saveStatus)
   useEffect(() => { const i = setInterval(() => setTick(x => x + 1), 30000); return () => clearInterval(i) }, [])
   const [tab, setTab] = useState<'all' | 'M' | 'F' | 'Hunter' | 'Monarch'>('all')
   const [pick, setPick] = useState<string | null>(null)
@@ -53,7 +62,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     if (mode === 'up' && p !== p2) return setErr('Passwords do not match.')
     try { const r = await (mode === 'up' ? backend!.signUp(u, p) : backend!.signIn(u, p)); cachedSession = r; setS(r) } catch (e: any) { setErr(e.message) }
   }
-  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); const job = saveChain.then(() => saveAny(s, { progress: pr })); saveChain = job.catch(() => {}); try { await job } catch { setSaveErr('Could not save to the server. Check your connection and try again.') } }
+  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); pendingSaves++; setStatus('saving'); const job = saveChain.then(() => saveAny(s, { progress: pr })); saveChain = job.catch(() => {}); try { await job; pendingSaves--; if (pendingSaves === 0) setStatus('saved') } catch { pendingSaves--; setStatus('failed'); setSaveErr('Could not save to the server. Check your connection and try again.') } }
   const lv = useMemo(() => g.levelFromXp(s?.progress.xp ?? 0), [s])
   const band = Math.min(9, Math.floor((lv.level - 1) / 10))
   const [t0, setT0r] = useState<number | null>(() => { const v = Number(lsGet('srf-t0')); return v > 0 ? v : null })
@@ -104,6 +113,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
   return (<main className={motion ? 'sys' : 'sys still'}>
     <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level. Only Sung Jinwoo changes with level (10 art steps with a blend between them); the other avatars show one static portrait. Plans after 1 Nov are pending.</div>
     {saveErr && <div className="err" role="alert">{saveErr}</div>}
+    {status !== 'idle' && !saveErr && <div className="srf-save" role="status">{status === 'saving' ? 'Saving to server...' : status === 'saved' ? 'Saved to server.' : 'Save failed.'}</div>}
     <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}</nav>
     <section className="dash">
       {page === 'home' && <>
@@ -113,7 +123,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
         <div className="bar"><div style={{ width: `${(lv.into / lv.need) * 100}%` }} /></div><small>XP {lv.into} / {lv.need}</small>
         
       </div>
-        <div className="card quest"><div className="tag">TODAY - {plan.label}</div><p>{canTrain ? (done ? 'Quest complete. Nice work.' : 'Your quest is ready.') : 'No training today. Rest counts, no penalty.'}</p><Link className="btn" to={'/today' as any}>OPEN TODAY'S WORKOUT</Link></div>
+        <div className="card quest"><div className="tag">TODAY - {plan.label}</div><p>{canTrain ? (done ? (status === 'saving' ? 'Quest complete. Saving to server...' : 'Quest complete. Nice work.') : 'Your quest is ready.') : 'No training today. Rest counts, no penalty.'}</p><Link className="btn" to={'/today' as any}>OPEN TODAY'S WORKOUT</Link></div>
       </>}
       {page === 'today' && <>
       <div className="card quest"><div className="tag">DAILY QUEST - {day} - {plan.label}</div>

@@ -46,3 +46,4 @@ a.btn{display:inline-block;text-decoration:none;text-align:center}
 
 .mo{display:flex;align-items:center;gap:8px;justify-content:flex-start}.mo input[type=checkbox]{width:auto;flex:none}
 body{padding-bottom:72px}
+.srf-save{font-size:12px;opacity:.8;margin:4px 0}
