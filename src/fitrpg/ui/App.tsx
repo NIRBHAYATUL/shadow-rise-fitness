@@ -44,7 +44,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
   const [feel, setFeel] = useState<g.Feel | null>(null)
   const [sym, setSym] = useState<g.Symptom | null>(null)
 
-  useEffect(() => { backend?.restore().then(r => { if (r) { cachedSession = r; setS(r) } else { cachedSession = null; setS(null) } }).catch(() => {}) }, [])
+  useEffect(() => { if (cachedSession) return; backend?.restore().then(r => { if (r) { cachedSession = r; setS(r) } else { cachedSession = null; setS(null) } }).catch(() => {}) }, [])
   async function logout() { await backend?.signOut(); cachedSession = null; lsSet('srf-t0', null); setS(null); setU(''); setP(''); setP2('') }
   async function auth() {
     setErr('')
