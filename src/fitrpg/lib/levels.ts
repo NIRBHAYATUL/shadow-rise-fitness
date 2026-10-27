@@ -29,4 +29,4 @@ export function bodyBlend(level: number): { a: number; b: number | null; mix: nu
   const l = Math.min(MAX_LEVEL, Math.max(1, Math.floor(level))), band = Math.floor((l - 1) / 10), step = (l - 1) % 10
   return { a: band + 1, b: band < 9 ? band + 2 : null, mix: band < 9 ? step / 10 : 0, aura: l / 100 }
 }
-export const FULLBODY: Record<string, string> = { 'cha-hae-in': '/body/cha-hae-in.webp', 'choi-jong-in': '/body/choi-jong-in.webp', 'baek-yoonho': '/body/baek-yoonho.webp', 'go-gunhee': '/body/go-gunhee.webp' }
+export const FULLBODY: Record<string, string> = {}

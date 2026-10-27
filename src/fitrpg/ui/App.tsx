@@ -97,7 +97,6 @@ export default function App({ page = 'home' }: { page?: Page }) {
     const list = filterRoster(tab)
     return (<main className={motion ? 'sys' : 'sys still'}><section className="card wide">
       <div className="tag">[ SYSTEM ] CHOOSE YOUR HUNTER</div><h1>AVATAR SELECT</h1>
-      <div className="tabs">{(['all', 'M', 'F', 'Hunter', 'Monarch'] as const).map(t => <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{({ all: 'All', M: 'Male', F: 'Female', Hunter: 'S-Rank Hunters', Monarch: 'Monarchs' })[t]}</button>)}</div>
       <div className="grid">{list.map(h => <button key={h.id} className={'tile' + (pick === h.id ? ' sel' : '')} onClick={() => setPick(h.id)}>
         <Portrait h={h} /><b>{h.name}</b><i>{h.group}{h.note ? ' - ' + h.note : ''}</i></button>)}</div>
       <button className="btn ghost" onClick={logout}>LOG OUT</button> <button className="btn" disabled={!pick} onClick={async () => { try { await saveAny(s, { avatar: pick! }) } catch { setErr('Could not save your avatar. Try again.'); return } const n = { ...s, avatar: pick }; cachedSession = n; setS(n) }}>CONFIRM AVATAR</button>
@@ -116,7 +115,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     await update(g.complete(s!.progress, qDay, feel, sym)); setStep(null); setFeel(null); setSym(null); setQDay(null)
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
-    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level. Only Sung Jinwoo changes with level (10 art steps with a blend between them); the other avatars show one static portrait. Plans after 1 Nov are pending.</div>
+    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level. Sung Jinwoo is the only avatar. He changes with level (10 art steps with a blend between them). Plans after 1 Nov are pending.</div>
     {saveErr && <div className="err" role="alert">{saveErr}</div>}
     {notice && <div className="err" role="status">{notice}</div>}
     {status !== 'idle' && !saveErr && <div className="srf-save" role="status">{status === 'saving' ? 'Saving to server...' : status === 'saved' ? 'Saved to server.' : 'Save failed.'}</div>}

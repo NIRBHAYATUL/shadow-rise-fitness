@@ -48,7 +48,7 @@ describe('sessions, sets and titles', () => {
   })
 })
 describe('roster filters', () => {
-  it('has both genders and monarchs', () => { expect(filterRoster('F').length).toBeGreaterThan(0); expect(filterRoster('Monarch').length).toBeGreaterThan(0) })
+  it('roster is Sung Jinwoo only', () => { expect(filterRoster('all').map(h => h.id)).toEqual(['sung-jinwoo']) })
 })
 describe('credentials rules', () => { it('checks username and password', () => { expect(checkCreds('ab', 'longenough1')).not.toBeNull(); expect(checkCreds('abc', 'short')).not.toBeNull(); expect(checkCreds('abc_1', 'longenough1')).toBeNull() }) })
 import { dayPlan } from './plan'
