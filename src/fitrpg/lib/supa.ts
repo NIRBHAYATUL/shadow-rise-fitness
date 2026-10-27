@@ -18,7 +18,8 @@ export function supabaseBackend(url: string, anonKey: string): Backend {
       const e = checkCreds(u, p); if (e) throw new Error(e)
       const { error } = await sb.auth.signUp({ email: alias(u), password: p, options: { data: { username: u } } })
       if (error) throw new Error(/already/i.test(error.message) ? 'That username is taken. Pick another.' : 'Could not create the account. Try again.')
-      return load(u)
+      // The account exists from here on. If only the first read fails, say so: retrying Create Account would answer "taken".
+      try { return await load(u) } catch { throw new Error('Account created. Press Log in to continue.') }
     },
     async signIn(u, p) {
       const { error } = await sb.auth.signInWithPassword({ email: alias(u), password: p })
