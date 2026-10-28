@@ -1,6 +1,6 @@
 {
   "target_count": 100,
-  "accepted_count": 19,
+  "accepted_count": 32,
   "note": "Unfinished levels reuse their current rank anchor explicitly. Not100distinctimages.",
   "entries": [
     {
@@ -79,10 +79,114 @@
       "sha256": "57ea9bb7a43b147d0b610b59587f33b19e92bf2249a0d629241fcea17a7efacd"
     },
     {
+      "level": 12,
+      "src": "/body/level-012.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 11,
+      "meaning": "Quilted shoulder yoke, vertical zip chest pockets and plain reinforced cuffs",
+      "sha256": "41ed137f288d1b25d379cbe8a6baaa7fc3f279a3809447f296c0158063a78839"
+    },
+    {
+      "level": 13,
+      "src": "/body/level-013.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 11,
+      "meaning": "Compact sleeve pocket, diagonal chest zips and stitched denim repairs",
+      "sha256": "d7decd6eb661b321b985d817fd223015fca278b8da80ce0aac3d6849e90b9a27"
+    },
+    {
+      "level": 14,
+      "src": "/body/level-014.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 11,
+      "meaning": "Soft chest harness and flat pouch on bomber",
+      "sha256": "a98c9721154bf7a0096358364c0cf7916e2150c1005631b774d3296cdffbd371"
+    },
+    {
+      "level": 15,
+      "src": "/body/level-015.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 11,
+      "meaning": "Four-pocket utility waistcoat over bomber",
+      "sha256": "5dc7c71f79c942219bb5669cd43a06002c55538eab147d99f262c9808f8dc200"
+    },
+    {
+      "level": 16,
+      "src": "/body/level-016.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 11,
+      "meaning": "Crossbody satchel and compact thigh pockets",
+      "sha256": "3a9ba5a174cdc0143ccf0c63e0c9788a48afb59c6741ac227706ac4aaf3bc5f3"
+    },
+    {
+      "level": 17,
+      "src": "/body/level-017.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 11,
+      "meaning": "Stacked zip pocket weather jacket with shaped seams",
+      "sha256": "1fe254a072d78d5557c42d42a4f2d5e86952e594887c1fc81c983ce7dd2f8dae"
+    },
+    {
+      "level": 18,
+      "src": "/body/level-018.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 11,
+      "meaning": "Midhip lightweight parka with drawcord stormflap",
+      "sha256": "4f84048d9c565efe966248ba271cda15954a23518769c6f64dc1bb25b4f41c9a"
+    },
+    {
+      "level": 19,
+      "src": "/body/level-019.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 11,
+      "meaning": "Double snap stormflap and soft shoulder tabs, clean transition silhouette",
+      "sha256": "1bf3ddd485045c968c2f277d7f8c22f5b5fc64cfa9ac6c3d960aff1bd7f85d8e"
+    },
+    {
+      "level": 20,
+      "src": "/body/level-020.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 11,
+      "meaning": "Tall sportsfield collar and blue edge piping bridge to C-Rank anchor21",
+      "sha256": "6c50cfb997240ca1589adfbad2993ee1f6bd4dd6570aab329be9899e43fd818e"
+    },
+    {
       "level": 21,
       "src": "/body/jinwoo-03.webp",
       "kind": "approved rank anchor",
       "sha256": "d95d76edff69986cbc22dbffe3c326c6c9c377ee50fe8347429212561b0541ea"
+    },
+    {
+      "level": 22,
+      "src": "/body/level-022.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 21,
+      "meaning": "Reinforced elbow panels, structured shoulder yoke and diagonal chest zips",
+      "sha256": "752690f717bba09c5c5dc06749e14566de0973fedfb3b2bac3baff22cc49e9cc"
+    },
+    {
+      "level": 23,
+      "src": "/body/level-023.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 21,
+      "meaning": "Upperarm cargo pocket, wristwraps and stitched knee reinforcements",
+      "sha256": "7813290bd4bffde119becfba4b1a91143224e7255118f566f156d526aaa84c41"
+    },
+    {
+      "level": 24,
+      "src": "/body/level-024.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 21,
+      "meaning": "Soft utility waistcoat with horizontal zip and flat flap pockets",
+      "sha256": "03b9f3a2ff1f12af18c4354ad9bd1155d1e18e8a4205ae4a244a8f58a1e86abe"
+    },
+    {
+      "level": 25,
+      "src": "/body/level-025.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 21,
+      "meaning": "Soft H-chest harness with flat pouch and thigh cargo pockets",
+      "sha256": "9c1c52c129c15af53ae7ad162189ea576b6d9bc17c1dd1fb843953909e590cea"
     },
     {
       "level": 31,
