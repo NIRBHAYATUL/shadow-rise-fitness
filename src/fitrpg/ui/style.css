@@ -47,3 +47,6 @@ a.btn{display:inline-block;text-decoration:none;text-align:center}
 .mo{display:flex;align-items:center;gap:8px;justify-content:flex-start}.mo input[type=checkbox]{width:auto;flex:none}
 body{padding-bottom:72px}
 .srf-save{font-size:12px;opacity:.8;margin:4px 0}
+.modal .card{max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal .quota label.mo,.modal label.mo{display:flex!important;align-items:center;gap:12px;min-height:44px;padding:6px 4px;cursor:pointer;margin:0}
+.modal label.mo input[type=checkbox]{width:24px;height:24px;min-width:24px;margin:0;flex:none}
