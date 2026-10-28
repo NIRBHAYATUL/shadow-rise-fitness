@@ -148,3 +148,13 @@ export function reportSymptom(s: ProgState | undefined, day: string, symptom: 'd
   const st = s ?? emptyProg()
   return st.lock ? st : { ...st, lock: { since: day, reason: symptom } }
 }
+
+// Persisted state can be partial or from an older shape. Fill missing fields so screens never crash,
+// and never clear a lock or hold: whatever the server stored stays as stored.
+export function normalizeProg(p: unknown): ProgState | undefined {
+  if (!p || typeof p !== 'object' || Array.isArray(p)) return undefined
+  const o = p as Record<string, any>
+  const obj = (v: unknown) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {})
+  const arr = (v: unknown) => (Array.isArray(v) ? v : [])
+  return { ...emptyProg(), ...o, step: obj(o.step), history: arr(o.history), advice: arr(o.advice), holds: obj(o.holds), lastChange: obj(o.lastChange), lock: o.lock ?? null, lastAction: o.lastAction ?? null } as ProgState
+}

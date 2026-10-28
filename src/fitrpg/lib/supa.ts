@@ -4,6 +4,8 @@
 import { createClient } from '@supabase/supabase-js'
 import { Backend, Session, checkCreds } from './store'
 import { emptyProgress } from './game'
+import { normalizeProg } from './progression'
+const clean = (pr: any) => { if (pr && typeof pr === 'object' && pr.prog) { const n = normalizeProg(pr.prog); return n ? { ...pr, prog: n } : pr } return pr }
 export const ATOMIC_SAVE_ENABLED = true // Migration 20261028_atomic_safety applied to production and race/RLS/old-client tests passed on 28 Oct 2026.
 export function supabaseBackend(url: string, anonKey: string, atomic = ATOMIC_SAVE_ENABLED): Backend {
   const sb = createClient(url, anonKey)
@@ -14,7 +16,7 @@ export function supabaseBackend(url: string, anonKey: string, atomic = ATOMIC_SA
     // A failed read must never look like a new player: the next save would overwrite real progress.
     if (error) throw new Error('Could not load your saved progress. Check your connection and try again.')
     revision = data?.revision ?? (data ? null : 0)
-    return { username, avatar: data?.avatar ?? null, progress: data?.progress ?? emptyProgress() }
+    return { username, avatar: data?.avatar ?? null, progress: clean(data?.progress) ?? emptyProgress() }
   }
   return {
     async signUp(u, p) {
@@ -47,7 +49,7 @@ export function supabaseBackend(url: string, anonKey: string, atomic = ATOMIC_SA
       const { data, error } = await sb.rpc('srf_save_state', { expected_revision: revision, state_patch: patch })
       if (error) throw new Error(error.message.includes('SRF_CONFLICT') ? 'Progress changed on another device. Reload to see the latest saved progress. This change was not saved.' : error.message)
       revision = Number(data.revision)
-      return { progress: data.progress }
+      return { progress: clean(data.progress) }
     },
   }
 }
