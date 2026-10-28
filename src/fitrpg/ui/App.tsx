@@ -6,7 +6,7 @@ import { supabaseBackend } from '../lib/supa'
 import { ROSTER, filterRoster, Hunter } from '../lib/roster'
 import * as g from '../lib/game'
 import { titleFor, PROFILE_TITLES, ANIME_ANCHORS, bodyBlend, FULLBODY } from '../lib/levels'
-import { dayPlan } from '../lib/plan'
+import { dayPlan, reviewedDayPlan } from '../lib/plan'
 import * as pg from '../lib/progression'
 
 const env = import.meta.env
@@ -17,7 +17,7 @@ const real = true
 const backend: Backend | null = supabaseBackend(SB_URL, SB_KEY)
 const DEMO = 'fitrpg-demo'
 const loadDemo = (): Session => { try { return JSON.parse(localStorage.getItem(DEMO) || '') } catch { return { username: 'demo', avatar: null, progress: g.emptyProgress() } } }
-const saveAny = async (s: Session, patch: { avatar?: string; progress?: g.Progress }) => { if (backend) await backend.save(s.username, patch); else localStorage.setItem(DEMO, JSON.stringify({ ...s, ...patch })) }
+const saveAny = async (s: Session, patch: { avatar?: string; progress?: g.Progress }) => { if (backend) return await backend.save(s.username, patch); else localStorage.setItem(DEMO, JSON.stringify({ ...s, ...patch })) }
 const VIDEOS: [RegExp, string][] = [[/room walk/i, '/hindi/room-walk-hi.mp4'], [/calf raise/i, '/hindi/calf-raise-hi.mp4'], [/bottle curl/i, '/hindi/bottle-curl-hi.mp4'], [/cool-down/i, '/hindi/cool-down-hi.mp4'], [/^bridge/i, '/hindi/bridge-hi.mp4'], [/wall push-up/i, '/hindi/wall-pushup-hi.mp4'], [/mini-squat/i, '/hindi/mini-squat-hi.mp4'], [/bird-dog/i, '/hindi/bird-dog-hi.mp4']]
 const videoFor = (n: string) => VIDEOS.find(([r]) => r.test(n))?.[1]
 let cachedSession: Session | null = null
@@ -69,7 +69,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     if (mode === 'up' && p !== p2) return setErr('Passwords do not match.')
     try { const r = await (mode === 'up' ? backend!.signUp(u, p) : backend!.signIn(u, p)); cachedSession = r; setS(r) } catch (e: any) { setErr(e.message) }
   }
-  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); const gen = sessionGen; pendingSaves++; setStatus('saving'); const job = saveChain.then(() => saveAny(s, { progress: pr })); saveChain = job.catch(() => {}); try { await job; if (gen !== sessionGen) return; pendingSaves--; if (pendingSaves === 0) setStatus('saved') } catch { if (gen !== sessionGen) return; pendingSaves--; setStatus('failed'); setSaveErr('Could not save to the server. Check your connection and try again.') } }
+  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); const gen = sessionGen; pendingSaves++; setStatus('saving'); const job = saveChain.then(() => saveAny(s, { progress: pr })); saveChain = job.catch(() => {}); try { const saved = await job; if (gen !== sessionGen) return; pendingSaves--; if (pendingSaves === 0) { if (saved?.progress) { const canonical = { ...n, progress: saved.progress }; cachedSession = canonical; setS(canonical) }; setStatus('saved') } } catch (e) { if (gen !== sessionGen) return; pendingSaves--; setStatus('failed'); setSaveErr(e?.message?.includes('Progress changed on another device') ? e.message : 'Could not save to the server. Check your connection and try again.') } }
   const lv = useMemo(() => g.levelFromXp(s?.progress.xp ?? 0), [s])
   const band = Math.min(9, Math.floor((lv.level - 1) / 10))
   const [t0, setT0r] = useState<number | null>(() => { const v = Number(lsGet('srf-t0')); return v > 0 ? v : null })
@@ -109,7 +109,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
   const h = ROSTER.find(x => x.id === s.avatar) ?? ROSTER.find(x => x.id === 'sung-jinwoo')! // unknown stored id: show a placeholder, never change the stored choice
   const day = today()
   const done = s.progress.doneDays.includes(day) || s.progress.doneDays.includes('rest:' + day)
-  const plan = dayPlan(day)
+  const plan = reviewedDayPlan(day, s.progress.future, s.progress.prog)
   const canTrain = plan.kind === 'train'
   async function finish() {
     if (!feel) return

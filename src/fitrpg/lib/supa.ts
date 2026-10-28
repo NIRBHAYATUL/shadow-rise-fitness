@@ -4,13 +4,16 @@
 import { createClient } from '@supabase/supabase-js'
 import { Backend, Session, checkCreds } from './store'
 import { emptyProgress } from './game'
-export function supabaseBackend(url: string, anonKey: string): Backend {
+export const ATOMIC_SAVE_ENABLED = false // Enable only after verified migration and live race tests.
+export function supabaseBackend(url: string, anonKey: string, atomic = ATOMIC_SAVE_ENABLED): Backend {
   const sb = createClient(url, anonKey)
+  let revision: number | null = null
   const alias = (u: string) => `${u.trim().toLowerCase()}@players.shadowrise.example`
   const load = async (username: string): Promise<Session> => {
-    const { data, error } = await sb.from('player_state').select('avatar,progress').maybeSingle()
+    const { data, error } = await sb.from('player_state').select(atomic ? 'avatar,progress,revision' : 'avatar,progress').maybeSingle()
     // A failed read must never look like a new player: the next save would overwrite real progress.
     if (error) throw new Error('Could not load your saved progress. Check your connection and try again.')
+    revision = data?.revision ?? (data ? null : 0)
     return { username, avatar: data?.avatar ?? null, progress: data?.progress ?? emptyProgress() }
   }
   return {
@@ -35,8 +38,16 @@ export function supabaseBackend(url: string, anonKey: string): Backend {
       const { data: s } = await sb.auth.getUser(); if (!s.user) throw new Error('Not signed in.')
       // Only ever write to the account that started this save; never to whoever is signed in now.
       if (s.user.email !== alias(u)) throw new Error('Account changed before saving.')
-      const { error } = await sb.from('player_state').upsert({ user_id: s.user.id, ...patch })
-      if (error) throw new Error(error.message)
+      if (!atomic) {
+        const { error } = await sb.from('player_state').upsert({ user_id: s.user.id, ...patch })
+        if (error) throw new Error(error.message)
+        return
+      }
+      if (revision === null) throw new Error('Safe saving is not ready. Reload after the database update.')
+      const { data, error } = await sb.rpc('srf_save_state', { expected_revision: revision, state_patch: patch })
+      if (error) throw new Error(error.message.includes('SRF_CONFLICT') ? 'Progress changed on another device. Reload to see the latest saved progress. This change was not saved.' : error.message)
+      revision = Number(data.revision)
+      return { progress: data.progress }
     },
   }
 }

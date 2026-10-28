@@ -7,7 +7,7 @@ export interface Backend {
   signIn(username: string, password: string): Promise<Session>
   restore(): Promise<Session | null>
   signOut(): Promise<void>
-  save(username: string, patch: { avatar?: string; progress?: Progress }): Promise<void>
+  save(username: string, patch: { avatar?: string; progress?: Progress }): Promise<{ progress?: Progress } | void>
 }
 export function checkCreds(u: string, p: string): string | null {
   if (!validUsername(u)) return 'Username: 3-20 letters, numbers or underscore.'

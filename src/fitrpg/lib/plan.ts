@@ -1,3 +1,5 @@
+import * as future from './futureProgression'
+import type { ProgState } from './progression'
 // Week 1 only (27 Oct to 1 Nov 2026), from the trainer's plan. Nothing is prescribed after 1 Nov 2026.
 export const PLAN_START = '2026-10-27'
 export type Move = [string, string]
@@ -27,4 +29,24 @@ export function dayPlan(day: string): DayPlan {
   if (wd === 3 || wd === 5) return { kind: 'train', label: 'Easy walk (baseline repeat)', moves: [['Easy walk, 5 to 10 min, may be 2 to 3 short parts. Full rest if in pain or unusually tired.', '5 to 10 min']] }
   if (wd === 0) return { kind: 'rest', label: 'Rest day', moves: [] }
   return { kind: 'none', label: 'No prescribed workout. Readiness review pending.', moves: [] }
+}
+
+// Future wiring is deliberately dormant. Existing dates and all baseline text are unchanged.
+// No date, XP level, or UI checkbox can select a progression scope.
+export function reviewedDayPlan(day: string, state?: future.FutureState, safety?: ProgState): DayPlan {
+  const plan = dayPlan(day)
+  if (!future.FUTURE_PROGRESSION_ENABLED || !state || !state.review || state.optedOut || day < state.review.effectiveFrom || safety?.lock || plan.kind !== 'train') return plan
+  const names: [RegExp, future.Exercise][] = [[/^Mini-squat/i,'mini-squat'],[/^Bridge/i,'bridge'],[/^Wall push-up/i,'wall-push-up'],[/bird-dog/i,'bird-dog'],[/calf raise/i,'calf-raise'],[/bottle curl/i,'bottle-curl']]
+  const moves: Move[] = plan.moves.map(([name,value]) => {
+    const ex = names.find(([re])=>re.test(name))?.[1]
+    if (!ex || !future.selected(state,ex)) return [name,value]
+    const dose = future.liveDose(state,ex,{lock:safety?.lock,holds:safety?.holds ?? {}})
+    return [name, dose.length === 2 ? `Set 1: ${dose[0]}, set 2: ${dose[1]}${ex === 'bird-dog' ? ' each limb' : ''}` : `${dose[0]}${ex === 'bird-dog' ? ' each' : ''}`]
+  })
+  // Existing one-set instruction must not conflict with a selected, reviewed two-set dose.
+  if (state.review.secondSetsSelected && Object.values(state.dose).some(d=>d?.length===2)) {
+    const i=moves.findIndex(m=>m[0].startsWith('Exactly 1 set each.'))
+    if(i>=0)moves[i]=['Use only the sets shown for each move. Keep 2 to 3 good reps in reserve. Floor moves optional if getting down is uncomfortable.','']
+  }
+  return {...plan,moves}
 }
