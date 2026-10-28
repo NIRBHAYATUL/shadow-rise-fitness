@@ -20,7 +20,7 @@ export function suggestIncrease(f: Feel, s: Symptom | null): boolean { return f 
 
 export interface Pending { day: string; feel?: Feel; symptom?: Symptom }
 export interface Sess { day: string; seconds: number }
-export interface Progress { xp: number; doneDays: string[]; pending: Pending | null; title?: string; sessions?: Sess[]; sets?: Record<string, number> }
+export interface Progress { xp: number; doneDays: string[]; pending: Pending | null; title?: string; sessions?: Sess[]; sets?: Record<string, number>; prog?: import('./progression').ProgState }
 export const emptyProgress = (): Progress => ({ xp: 0, doneDays: [], pending: null })
 
 // Awarding is idempotent per day: a refresh or double tap never doubles XP.
