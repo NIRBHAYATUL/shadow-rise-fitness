@@ -30,3 +30,13 @@ export function bodyBlend(level: number): { a: number; b: number | null; mix: nu
   return { a: band + 1, b: band < 9 ? band + 2 : null, mix: band < 9 ? step / 10 : 0, aura: l / 100 }
 }
 export const FULLBODY: Record<string, string> = {}
+
+// Accepted distinct drawings only. Unfinished levels explicitly hold their own rank anchor.
+export const DISTINCT_ART_LEVELS = [1,2,3,4,5,6,7,8,9,10,11,21,31,41,51,61,71,81,91] as const
+export const ACCEPTED_ART_COUNT = DISTINCT_ART_LEVELS.length
+export function bodyArt(level: number): { src: string; distinct: boolean; artLevel: number } {
+  const l = Math.min(100, Math.max(1, Math.floor(level)))
+  const distinct = (DISTINCT_ART_LEVELS as readonly number[]).includes(l)
+  const band = Math.floor((l - 1) / 10) + 1
+  return { src: l >= 2 && l <= 10 ? `/body/level-${String(l).padStart(3, '0')}.webp` : `/body/jinwoo-${String(band).padStart(2, '0')}.webp`, distinct, artLevel: distinct ? l : (band - 1) * 10 + 1 }
+}

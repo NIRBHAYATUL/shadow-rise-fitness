@@ -1,0 +1,130 @@
+{
+  "target_count": 100,
+  "accepted_count": 19,
+  "note": "Unfinished levels reuse their current rank anchor explicitly. Not100distinctimages.",
+  "entries": [
+    {
+      "level": 1,
+      "src": "/body/jinwoo-01.webp",
+      "kind": "approved rank anchor",
+      "sha256": "8a05023fcd5c8368a8ef10507325e3a9404010046cd8a13c97e8909b34948274"
+    },
+    {
+      "level": 2,
+      "src": "/body/level-002.webp",
+      "kind": "distinct early hunter construction",
+      "anchor_level": 1,
+      "sha256": "b9de1cad77a1b4833d74a0792ceedb9a28ec77bfd1d64307b7e10cf9071666aa"
+    },
+    {
+      "level": 3,
+      "src": "/body/level-003.webp",
+      "kind": "distinct early hunter construction",
+      "anchor_level": 1,
+      "sha256": "b5ef8686aa6c5f2deaed4c53b3b35408a39f1550497730120b7df5029d419ea2"
+    },
+    {
+      "level": 4,
+      "src": "/body/level-004.webp",
+      "kind": "distinct early hunter construction",
+      "anchor_level": 1,
+      "sha256": "f70e202848598a33c25038e9a9a3227f83989b78d0ea7351bc27968d12a15fe0"
+    },
+    {
+      "level": 5,
+      "src": "/body/level-005.webp",
+      "kind": "distinct early hunter construction",
+      "anchor_level": 1,
+      "sha256": "ab2f1c2d7395a89248c705f7cef4201205c742a7f109f1fe7664ccb80405adb6"
+    },
+    {
+      "level": 6,
+      "src": "/body/level-006.webp",
+      "kind": "distinct early hunter construction",
+      "anchor_level": 1,
+      "sha256": "de9577afaf072b782dea1546185d6f2598b3e7784bae4ea65a0680edbe30f093"
+    },
+    {
+      "level": 7,
+      "src": "/body/level-007.webp",
+      "kind": "distinct early hunter construction",
+      "anchor_level": 1,
+      "sha256": "a78229adf7b068eae43b14d24d3afffbf9ec9735374b3dc738fd5706df4b4734"
+    },
+    {
+      "level": 8,
+      "src": "/body/level-008.webp",
+      "kind": "distinct early hunter construction",
+      "anchor_level": 1,
+      "sha256": "5b6aec341d8f963b0ee76547900c10df1fa2ac65af47f4aee4c48cf77f04bbe3"
+    },
+    {
+      "level": 9,
+      "src": "/body/level-009.webp",
+      "kind": "distinct early hunter construction",
+      "anchor_level": 1,
+      "sha256": "81162172feb5eddcadab92b12c2b687f702ee16872821dc83d629e899c2d9bf0"
+    },
+    {
+      "level": 10,
+      "src": "/body/level-010.webp",
+      "kind": "distinct early hunter construction",
+      "anchor_level": 1,
+      "sha256": "306be3c5103988371ca20e30efb30af673eadecad02f5a6f80c5e7fcbe4456e5"
+    },
+    {
+      "level": 11,
+      "src": "/body/jinwoo-02.webp",
+      "kind": "approved rank anchor",
+      "sha256": "57ea9bb7a43b147d0b610b59587f33b19e92bf2249a0d629241fcea17a7efacd"
+    },
+    {
+      "level": 21,
+      "src": "/body/jinwoo-03.webp",
+      "kind": "approved rank anchor",
+      "sha256": "d95d76edff69986cbc22dbffe3c326c6c9c377ee50fe8347429212561b0541ea"
+    },
+    {
+      "level": 31,
+      "src": "/body/jinwoo-04.webp",
+      "kind": "approved rank anchor",
+      "sha256": "1f4dd295264d8cda9f04ffb6e437b84320a3f19c58a57a234ac8470a52a3eb9a"
+    },
+    {
+      "level": 41,
+      "src": "/body/jinwoo-05.webp",
+      "kind": "approved rank anchor",
+      "sha256": "297733f610179778263a6f4230271802cc2f8f6c4da920184714fe7c45b3d71d"
+    },
+    {
+      "level": 51,
+      "src": "/body/jinwoo-06.webp",
+      "kind": "approved rank anchor",
+      "sha256": "b03d1cc03b3f3ee4d7726684961c9d23b297a50fd07cd754a5a10e2d474064b8"
+    },
+    {
+      "level": 61,
+      "src": "/body/jinwoo-07.webp",
+      "kind": "approved rank anchor",
+      "sha256": "de248feeca453e10efe7ce47304d9163889668e207908f57b81d49161f694eb3"
+    },
+    {
+      "level": 71,
+      "src": "/body/jinwoo-08.webp",
+      "kind": "approved rank anchor",
+      "sha256": "827495f11e0a86ec78378b3ec3b991eff3fa5d1c0097469aee46ae949301842a"
+    },
+    {
+      "level": 81,
+      "src": "/body/jinwoo-09.webp",
+      "kind": "approved rank anchor",
+      "sha256": "3d8981958e56c554dabf92b640b474c1a83fa09aefffb64054687d248639e016"
+    },
+    {
+      "level": 91,
+      "src": "/body/jinwoo-10.webp",
+      "kind": "approved rank anchor",
+      "sha256": "0bd9577198bd02c804b5304c4f665c40cf80d6346ecadc4c7349c4d06ebbcfd3"
+    }
+  ]
+}
