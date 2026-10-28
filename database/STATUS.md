@@ -24,3 +24,12 @@ Live website: https://shadow-rise-fitness.lovable.app
 - After application: unchanged row count/data hash (unless real user activity explains a difference), RPC grants, revision behavior, old-client safety retention, two-device conflict rejection, RLS isolation and canonical flags returned to UI.
 - Client UI test with a conflict must show failure, not Saved. Do not silently retry stale data.
 - Test scripts use isolated state. They do not prove medical safety or production persistence.
+
+## Update 28 Oct 2026 (late): migration applied and live-checked
+- Migration 20261028_atomic_safety is applied in production. Race, stale-write, RLS and old-client tests passed.
+- Client: atomic saves are on. A rejected symptom report is kept in a per-account local outbox (keyed by auth user id, kept on logout, never shown to or merged into another account) and retried after login.
+- Live checks with disposable accounts (deleted afterwards): conflict shows failure not Saved; offline symptom and per-exercise hold kept, then confirmed on the server after reconnect with a concurrent server change preserved; two-account isolation; logout and login keeps the pending entry.
+- Limits: offline was simulated by failing network calls in a test frame, and the date was shifted in that frame only. This is not a full offline browser test.
+- Cold start without a connection now shows "Cannot verify your login" instead of the sign-up screen.
+- A Tier 1 symptom lock now also pauses workouts: no exercise list, no start, no timer. Symptom reporting, rest and navigation stay. There is still no in-app way to clear a lock.
+- Progression and second sets stay off. This is not medical validation.
