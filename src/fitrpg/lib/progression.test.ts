@@ -26,11 +26,12 @@ describe('progression (disabled scaffold)', () => {
     const later = P.recordDay(back.prog, '2026-11-01', 'easy', 'none', moves)
     expect(later.lock).not.toBeNull()
   })
-  it('pain holds exercises, does not lock, and clears after two pain-free sessions', () => {
+  it('pain holds exercises, does not lock, and never self-clears from day-level answers', () => {
     let s = P.recordDay(undefined, '2026-10-31', 'hard', 'pain', moves)
     expect(s.lock).toBeNull(); expect(s.holds['mini-squat']).toBeTruthy()
-    s = P.recordDay(s, '2026-11-03', 'easy', 'none', moves); expect(s.holds['mini-squat']).toBeTruthy()
-    s = P.recordDay(s, '2026-11-04', 'easy', 'none', moves); expect(s.holds['mini-squat']).toBeUndefined()
+    for (const d of ['2026-11-03', '2026-11-04', '2026-11-05']) s = P.recordDay(s, d, 'easy', 'none', moves)
+    expect(s.holds['mini-squat']).toBeTruthy()
+    expect(P.clearHold(s, 'mini-squat', true).holds['mini-squat']).toBeUndefined()
   })
   it('XP rule unchanged: hard without symptom still no increase and XP same as easy', () => {
     expect(g.suggestIncrease('hard', 'none')).toBe(true) // legacy suggestion flag; progression module ignores it

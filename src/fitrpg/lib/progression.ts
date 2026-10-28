@@ -20,7 +20,6 @@ export const MIN_DAYS_BETWEEN = 7    // max 1 step per exercise per week
 // Config: what is covered. Warm-up 5 min and cool-down 2 min are fixed. Rep phase only; second set is OUT for now.
 export const CONFIG = { warmupMin: 5, cooldownMin: 2, repPhaseOnly: true, maxSets: 1,
   covered: { 'mini-squat': true, 'bridge': true, 'wall-push-up': true, 'bird-dog': true, 'calf-raise': true, 'bottle-curl': false, 'standalone-walk': false } as Record<string, boolean> }
-export const PAIN_FREE_TO_CLEAR = 2
 const TIER1: Sym[] = ['chest', 'dizziness', 'breathing', 'irregular-heartbeat']
 
 // One logged session for one exercise.
@@ -51,10 +50,7 @@ export function recordFeedback(s: ProgState, e: Entry): ProgState {
   const holds = { ...s.holds }
   const history = [...s.history, e].slice(-90)
   if (e.symptom === 'pain' || e.symptom === 'illness') holds[e.ex] = e.day
-  else if (holds[e.ex] && e.symptom === 'none') {
-    const since = history.filter(h => h.ex === e.ex && h.day > holds[e.ex])
-    if (since.length >= PAIN_FREE_TO_CLEAR && since.slice(-PAIN_FREE_TO_CLEAR).every(h => h.symptom === 'none')) delete holds[e.ex]
-  }
+  // Holds never clear from a day-level answer. They clear only through clearHold with a reviewed gate.
   const painRepeats = history.filter(h => h.ex === e.ex && h.symptom === 'pain').length >= 2
   return { ...s, history, lock, holds, adviseAboutExercise: painRepeats ? e.ex : (s.adviseAboutExercise ?? null) }
 }
@@ -70,7 +66,7 @@ export function recordMedicalAdvice(s: ProgState, a: AdviceRecord, reviewed: boo
   if (a.adviceObtained && a.exerciseAllowed !== 'no' && reviewed) return { ...s, advice, lock: null }
   return { ...s, advice }
 }
-// Manual clear needs a reviewed gate. Holds also clear after two pain-free sessions (see recordFeedback).
+// Holds clear only here, with a reviewed gate. Per-exercise completion and recovery inputs do not exist yet.
 export function clearHold(s: ProgState, ex: Ex, reviewed: boolean): ProgState {
   if (!reviewed) return s
   const holds = { ...s.holds }; delete holds[ex]

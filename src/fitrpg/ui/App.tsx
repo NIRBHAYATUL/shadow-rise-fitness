@@ -138,7 +138,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
           <button className="btn ghost" disabled={done} onClick={() => update(g.rest(s.progress, day))}>REST TODAY</button>
           <button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>
       <div className="card quest" data-testid="report-symptom"><div className="tag">FEEL UNWELL?</div>
-        <small>Chest pain or tightness, dizziness or faintness, unusual breathlessness, or a new irregular heartbeat: stop and rest. This does not use up your quest.</small>
+        <small style={{ display: 'block', margin: '6px 0' }}>Chest pain or tightness, dizziness or faintness, unusual breathlessness, or a new irregular heartbeat: stop and rest. This does not use up your quest.</small>
         <div className="row">{([['chest', 'CHEST PAIN'], ['dizziness', 'DIZZY'], ['breathing', 'BREATHLESS'], ['irregular-heartbeat', 'HEARTBEAT']] as const).map(([k, l]) => <button key={k} className="btn ghost" onClick={() => update({ ...s.progress, prog: pg.reportSymptom(s.progress.prog, day, k) })}>{l}</button>)}</div>
         {s.progress.prog?.lock && <div className="err">Stop exercising and rest. If symptoms are severe or you faint, call 112 (India) immediately. Please get medical advice before your next workout. Progression stays locked until you tell us you have spoken to a medical professional and that they said exercise is okay for you.</div>}</div>
       <div className="card quest"><div className="tag">SESSION</div>
@@ -158,11 +158,11 @@ export default function App({ page = 'home' }: { page?: Page }) {
         <div className="card stats"><div className="tag">PROGRESS</div><h2>LEVEL {lv.level}</h2><div className="bar"><div style={{ width: `${(lv.into / lv.need) * 100}%` }} /></div><small>XP {lv.into} / {lv.need}</small><small>Days completed: {s.progress.doneDays.length}</small></div>
         <div className="card quest"><div className="tag">RECENT SESSIONS</div><ul>{(s.progress.sessions ?? []).slice(-14).reverse().map((x, i) => <li key={i}><span>{x.day}</span><b>{Math.floor(x.seconds / 60)} min {x.seconds % 60} s</b></li>)}{!(s.progress.sessions ?? []).length && <li><span>No sessions yet</span></li>}</ul></div>
         <div className="card quest" data-testid="progression"><div className="tag">AUTOMATIC PROGRESSION</div>
-          <small>Suggested steps, not medical advice. Not clinically validated.</small>
-          <small>{pg.status(s.progress.prog ?? pg.emptyProg())}</small><small>Not active yet: nothing changes before your readiness review is recorded. Automatic sets are not available. Rep steps are planned first.</small>
-          <small>Your routine stays the same until your readiness review is recorded. Warm-up (5 min) and cool-down (2 min) never change.</small>
+          <small style={{ display: 'block', margin: '6px 0' }}>Suggested steps, not medical advice. Not clinically validated.</small>
+          <small style={{ display: 'block', margin: '6px 0' }}>{pg.status(s.progress.prog ?? pg.emptyProg())}</small><small style={{ display: 'block', margin: '6px 0' }}>Not active yet: nothing changes before your readiness review is recorded. Automatic sets are not available. Rep steps are planned first.</small>
+          <small style={{ display: 'block', margin: '6px 0' }}>Your routine stays the same until your readiness review is recorded. Warm-up (5 min) and cool-down (2 min) never change.</small>
           {s.progress.prog?.lock && <div className="err">Stop exercising and rest if you get chest pain or tightness, dizziness or faintness, unusual breathlessness, or a new irregular heartbeat. If symptoms are severe or you faint, call 112 (India) immediately. Please get medical advice before your next workout. Progression stays locked until you tell us you have spoken to a medical professional and that they said exercise is okay for you.</div>}
-          {s.progress.prog?.lastAction && <div><small>Last change: {s.progress.prog.lastAction.ex} moved up after your last sessions were Easy. Only this exercise changed.</small><button className="btn ghost" onClick={() => update({ ...s.progress, prog: pg.revertLast(s.progress.prog) })}>UNDO LAST CHANGE</button></div>}
+          {s.progress.prog?.lastAction && <div><small style={{ display: 'block', margin: '6px 0' }}>Last change: {s.progress.prog.lastAction.ex} moved up after your last sessions were Easy. Only this exercise changed.</small><button className="btn ghost" onClick={() => update({ ...s.progress, prog: pg.revertLast(s.progress.prog) })}>UNDO LAST CHANGE</button></div>}
         </div>
       </>}
       {page === 'settings' && <>
@@ -172,7 +172,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     </section>
     {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>}
     {step === 'symptom' && <div className="modal"><div className="card"><h3>ANY OF THESE?</h3>{([['pain', 'Pain'], ['dizziness', 'Dizziness or faintness'], ['chest', 'Chest pain or tightness'], ['breathing', 'Breathing feels unusual'], ['irregular-heartbeat', 'New irregular heartbeat'], ['none', 'None of these']] as const).map(([k, l]) => <button key={k} className={'opt' + (sym === k ? ' on' : '')} onClick={() => setSym(k)}>{l}</button>)}
-      {sym === 'pain' && <div className="err">Skip that exercise today. No increases for it until you have done it pain-free twice. If the pain keeps coming back, please get medical advice about that exercise.</div>}
+      {sym === 'pain' && <div className="err">Skip that exercise today. Increases for it stay on hold. If the pain keeps coming back, please get medical advice about that exercise.</div>}
       {(sym === 'dizziness' || sym === 'breathing' || sym === 'chest' || sym === 'irregular-heartbeat') && <div className="err">Stop exercising and rest. If symptoms are severe or you faint, call 112 (India) immediately. Please get medical advice before your next workout. Progression stays locked until you tell us you have spoken to a medical professional and that they said exercise is okay for you.</div>}<button className="btn" disabled={!sym} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>}
   </main>)
 }
