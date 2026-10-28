@@ -45,3 +45,18 @@ describe('report + status', () => {
     expect(P.status(P.emptyProg())).toMatch(/off/)
   })
 })
+describe('quota and recovery inputs', () => {
+  it('only ticked moves count as full quota; pain holds only the chosen move; recovery is never inferred', () => {
+    let s = P.recordDay(undefined, '2026-11-03', 'easy', 'none', moves, { finished: ['mini-squat', 'bridge'] })
+    expect(s.history.find(h => h.ex === 'mini-squat')!.fullQuota).toBe(true)
+    expect(s.history.find(h => h.ex === 'wall-push-up')!.fullQuota).toBe(false)
+    expect(P.pendingRecoveryDay(s, '2026-11-04')).toBe('2026-11-03')
+    expect(P.pendingRecoveryDay(s, '2026-11-10')).toBeNull()
+    s = P.setRecovery(s, '2026-11-03', 'sore')
+    expect(s.history.every(h => h.recoveryNextDay === 'sore')).toBe(true)
+    const p = P.recordDay(undefined, '2026-11-03', 'medium', 'pain', moves, { painEx: ['bridge'] })
+    expect(Object.keys(p.holds)).toEqual(['bridge'])
+    const all = P.recordDay(undefined, '2026-11-03', 'medium', 'pain', moves)
+    expect(Object.keys(all.holds).length).toBe(4)
+  })
+})

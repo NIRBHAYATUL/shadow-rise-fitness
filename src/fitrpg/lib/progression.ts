@@ -120,14 +120,27 @@ export function exercisesIn(moveNames: string[]): Ex[] {
   for (const n of moveNames) for (const [re, ex] of EX_BY_NAME) if (re.test(n) && !out.includes(ex)) out.push(ex)
   return out
 }
-export function recordDay(s: ProgState | undefined, day: string, feel: Feel3, symptom: 'pain' | 'dizziness' | 'breathing' | 'chest' | 'irregular-heartbeat' | 'none', moveNames: string[]): ProgState {
+export interface DayOpts { finished?: Ex[]; painEx?: Ex[] }
+export function recordDay(s: ProgState | undefined, day: string, feel: Feel3, symptom: 'pain' | 'dizziness' | 'breathing' | 'chest' | 'irregular-heartbeat' | 'none', moveNames: string[], opts: DayOpts = {}): ProgState {
   let st = s ?? emptyProg()
   const exs = exercisesIn(moveNames)
   if (!exs.length) return st
-  const sym: Sym = symptom
-  // A symptom on the day is not tied to one exercise (the app asks once), so it applies to every move that day.
-  for (const ex of exs) st = recordFeedback(st, { day, ex, feel, symptom: sym, fullQuota: false, recoveryNextDay: 'unknown' })
+  const finished = opts.finished ?? []
+  const painEx = opts.painEx && opts.painEx.length ? opts.painEx : exs // no choice made: every move that day is held
+  for (const ex of exs) {
+    const sym: Sym = symptom === 'pain' && !painEx.includes(ex) ? 'none' : symptom
+    st = recordFeedback(st, { day, ex, feel, symptom: sym, fullQuota: finished.includes(ex) && sym === 'none', recoveryNextDay: 'unknown' })
+  }
   return st
+}
+// Next-day recovery for the entries of one session day. Never inferred.
+export function setRecovery(s: ProgState, day: string, r: Recovery): ProgState {
+  return { ...s, history: s.history.map(h => h.day === day && h.recoveryNextDay === 'unknown' ? { ...h, recoveryNextDay: r } : h) }
+}
+export function pendingRecoveryDay(s: ProgState | undefined, today: string): string | null {
+  if (!s) return null
+  const days = s.history.filter(h => h.recoveryNextDay === 'unknown' && h.day < today && daysBetween(h.day, today) <= 3).map(h => h.day).sort()
+  return days.length ? days[days.length - 1] : null
 }
 
 // Always-available safety report, any effort level, no XP, no extra steps for Easy/Medium. Locks programme-wide.
