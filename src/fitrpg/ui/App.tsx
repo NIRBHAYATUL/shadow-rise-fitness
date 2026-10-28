@@ -121,7 +121,8 @@ export default function App({ page = 'home' }: { page?: Page }) {
   const day = today()
   const done = s.progress.doneDays.includes(day) || s.progress.doneDays.includes('rest:' + day)
   const plan = reviewedDayPlan(day, s.progress.future, s.progress.prog)
-  const canTrain = plan.kind === 'train'
+  const locked = !!s.progress.prog?.lock // Tier 1 symptom lock: fail closed, no workout is offered or startable until it is reviewed
+  const canTrain = plan.kind === 'train' && !locked
   async function finish() {
     if (!feel) return
     if (g.needsSymptomStep(feel) && !sym) return setStep('symptom')
@@ -142,11 +143,11 @@ export default function App({ page = 'home' }: { page?: Page }) {
         <div className="bar"><div style={{ width: `${(lv.into / lv.need) * 100}%` }} /></div><small>XP {lv.into} / {lv.need}</small>
         
       </div>
-        <div className="card quest"><div className="tag">TODAY - {plan.label}</div><p>{canTrain ? (done ? (status === 'saving' ? 'Quest complete. Saving to server...' : 'Quest complete. Nice work.') : 'Your quest is ready.') : 'No training today. Rest counts, no penalty.'}</p><Link className="btn" to={'/today' as any}>OPEN TODAY'S WORKOUT</Link></div>
+        <div className="card quest"><div className="tag">TODAY - {plan.label}</div><p>{locked ? 'Workouts are paused after your safety report. Please get medical advice before your next workout. You can still report symptoms.' : canTrain ? (done ? (status === 'saving' ? 'Quest complete. Saving to server...' : 'Quest complete. Nice work.') : 'Your quest is ready.') : 'No training today. Rest counts, no penalty.'}</p><Link className="btn" to={'/today' as any}>OPEN TODAY'S WORKOUT</Link></div>
       </>}
       {page === 'today' && <>
       <div className="card quest"><div className="tag">DAILY QUEST - {day} - {plan.label}</div>
-        <ul>{plan.moves.map(([n, r]) => <li key={n}><span>{n}</span><b>{r}</b>{videoFor(n) && motion && <img className="loop" loading="lazy" src={videoFor(n)!.replace('-hi.mp4', '-loop.gif')} alt={`${n}: silent movement loop`} />}{videoFor(n) && <details className="vid"><summary>Watch demo (Hindi voice, English captions)</summary><video controls preload="none" playsInline src={videoFor(n)} /></details>}</li>)}{!plan.moves.length && <li><span>{plan.kind === 'before' ? 'Your plan starts on Tue 27 Oct 2026.' : plan.kind === 'none' ? 'Next plan is pending. Nothing harder is unlocked by XP.' : 'No training today. Rest counts, no penalty.'}</span></li>}</ul>
+        {locked ? <p className="err" data-testid="locked-plan">Workout paused. No exercises are shown while your safety report is under review. Rest and get medical advice first.</p> : <ul>{plan.moves.map(([n, r]) => <li key={n}><span>{n}</span><b>{r}</b>{videoFor(n) && motion && <img className="loop" loading="lazy" src={videoFor(n)!.replace('-hi.mp4', '-loop.gif')} alt={`${n}: silent movement loop`} />}{videoFor(n) && <details className="vid"><summary>Watch demo (Hindi voice, English captions)</summary><video controls preload="none" playsInline src={videoFor(n)} /></details>}</li>)}{!plan.moves.length && <li><span>{plan.kind === 'before' ? 'Your plan starts on Tue 27 Oct 2026.' : plan.kind === 'none' ? 'Next plan is pending. Nothing harder is unlocked by XP.' : 'No training today. Rest counts, no penalty.'}</span></li>}</ul>}
         <div className="row"><button className="btn" disabled={done || !canTrain} onClick={() => { setNotice(''); setQDay(day); update(g.startPending(s.progress, day)); setStep('feel') }}>{done ? 'DONE TODAY' : 'TARGET DONE'}</button>
           <button className="btn ghost" disabled={done} onClick={() => update(g.rest(s.progress, day))}>REST TODAY</button>
           <button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>
