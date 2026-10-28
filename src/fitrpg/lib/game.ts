@@ -1,6 +1,6 @@
 // Game rules. Cosmetic only: XP and stages never measure fitness or readiness.
 export type Feel = 'easy' | 'medium' | 'hard'
-export type Symptom = 'pain' | 'dizziness' | 'breathing' | 'none'
+export type Symptom = 'pain' | 'dizziness' | 'breathing' | 'chest' | 'irregular-heartbeat' | 'none'
 export const XP_PER_QUEST = 100 // same for Easy, Medium, Hard
 export const XP_CHECKIN = 20
 export const XP_REST = 30

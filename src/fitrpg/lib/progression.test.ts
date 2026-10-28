@@ -37,3 +37,10 @@ describe('progression (disabled scaffold)', () => {
     expect(P.nextChange(P.recordDay(undefined, '2026-11-03', 'hard', 'none', moves), '2026-11-04')).toBeNull()
   })
 })
+describe('report + status', () => {
+  it('report locks, status shows locked even when disabled', () => {
+    const s = P.reportSymptom(undefined, '2026-11-03', 'chest')
+    expect(s.lock?.reason).toBe('chest'); expect(P.status(s)).toMatch(/locked/)
+    expect(P.status(P.emptyProg())).toMatch(/off/)
+  })
+})

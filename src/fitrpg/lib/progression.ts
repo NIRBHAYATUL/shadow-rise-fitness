@@ -110,8 +110,8 @@ export function revertLast(s: ProgState): ProgState {
 export function reps(s: ProgState, ex: Ex): number { return LADDER[ex][s.step[ex] ?? 0] }
 // Visible status for the UI (to be wired after review).
 export function status(s: ProgState): string {
-  if (!PROGRESSION_ENABLED) return 'Automatic progression is off.'
   if (s.lock) return 'Progression is locked. Medical advice is needed first.'
+  if (!PROGRESSION_ENABLED) return 'Automatic progression is off.'
   if (!s.review || !s.activatedOn) return 'Waiting for the readiness review.'
   return 'Progression is on. Changes are small and you can undo them.'
 }
@@ -124,7 +124,7 @@ export function exercisesIn(moveNames: string[]): Ex[] {
   for (const n of moveNames) for (const [re, ex] of EX_BY_NAME) if (re.test(n) && !out.includes(ex)) out.push(ex)
   return out
 }
-export function recordDay(s: ProgState | undefined, day: string, feel: Feel3, symptom: 'pain' | 'dizziness' | 'breathing' | 'none', moveNames: string[]): ProgState {
+export function recordDay(s: ProgState | undefined, day: string, feel: Feel3, symptom: 'pain' | 'dizziness' | 'breathing' | 'chest' | 'irregular-heartbeat' | 'none', moveNames: string[]): ProgState {
   let st = s ?? emptyProg()
   const exs = exercisesIn(moveNames)
   if (!exs.length) return st
@@ -132,4 +132,10 @@ export function recordDay(s: ProgState | undefined, day: string, feel: Feel3, sy
   // A symptom on the day is not tied to one exercise (the app asks once), so it applies to every move that day.
   for (const ex of exs) st = recordFeedback(st, { day, ex, feel, symptom: sym, fullQuota: false, recoveryNextDay: 'unknown' })
   return st
+}
+
+// Always-available safety report, any effort level, no XP, no extra steps for Easy/Medium. Locks programme-wide.
+export function reportSymptom(s: ProgState | undefined, day: string, symptom: 'dizziness' | 'breathing' | 'chest' | 'irregular-heartbeat'): ProgState {
+  const st = s ?? emptyProg()
+  return st.lock ? st : { ...st, lock: { since: day, reason: symptom } }
 }
