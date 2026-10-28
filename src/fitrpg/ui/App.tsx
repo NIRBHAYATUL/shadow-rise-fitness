@@ -116,7 +116,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     { const before = s!.progress; let after = g.complete(before, qDay, feel, sym); if (after.doneDays.length > before.doneDays.length) after = { ...after, prog: pg.recordDay(before.prog, qDay, feel, sym ?? 'none', dayPlan(qDay).moves.map(m => m[0])) }; await update(after) }; setStep(null); setFeel(null); setSym(null); setQDay(null)
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
-    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level. Sung Jinwoo is the only avatar. He changes with each rank band (10 art steps, shown one at a time, no blending). Plans after 1 Nov are pending.</div>
+    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level. Sung Jinwoo is the only avatar. He changes with each rank band (10 art steps, shown one at a time, no blending). After 1 Nov the week 1 baseline repeats unchanged until the readiness review is done. Automatic progression is off.</div>
     {saveErr && <div className="err" role="alert">{saveErr}</div>}
     {notice && <div className="err" role="status">{notice}</div>}
     {status !== 'idle' && !saveErr && <div className="srf-save" role="status">{status === 'saving' ? 'Saving to server...' : status === 'saved' ? 'Saved to server.' : 'Save failed.'}</div>}
