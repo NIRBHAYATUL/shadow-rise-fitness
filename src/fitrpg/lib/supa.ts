@@ -16,7 +16,8 @@ export function supabaseBackend(url: string, anonKey: string, atomic = ATOMIC_SA
     // A failed read must never look like a new player: the next save would overwrite real progress.
     if (error) throw new Error('Could not load your saved progress. Check your connection and try again.')
     revision = data?.revision ?? (data ? null : 0)
-    return { username, avatar: data?.avatar ?? null, progress: clean(data?.progress) ?? emptyProgress() }
+    const { data: auth } = await sb.auth.getSession(); const uid = auth?.session?.user?.id
+    return { username, uid, avatar: data?.avatar ?? null, progress: clean(data?.progress) ?? emptyProgress() }
   }
   return {
     async signUp(u, p) {

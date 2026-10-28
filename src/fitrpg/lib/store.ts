@@ -1,7 +1,7 @@
 // Storage interface. Real accounts use Supabase (server-saved, per-user). There is no local password store. Passwords never touch our code
 // except being passed to the auth service.
 import { Progress, validUsername, validPassword } from './game'
-export interface Session { username: string; avatar: string | null; progress: Progress }
+export interface Session { username: string; uid?: string; avatar: string | null; progress: Progress }
 export interface Backend {
   signUp(username: string, password: string): Promise<Session>
   signIn(username: string, password: string): Promise<Session>
