@@ -31,7 +31,7 @@ export function bodyBlend(level: number): { a: number; b: number | null; mix: nu
 export const FULLBODY: Record<string, string> = {}
 
 // Accepted distinct drawings only. Unfinished levels explicitly hold their own rank anchor.
-export const DISTINCT_ART_LEVELS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,31,41,51,61,71,81,91] as const
+export const DISTINCT_ART_LEVELS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,41,51,61,71,81,91] as const
 export const ACCEPTED_ART_COUNT = DISTINCT_ART_LEVELS.length
 export function bodyArt(level: number): { src: string; distinct: boolean; artLevel: number } {
   const l = Math.min(100, Math.max(1, Math.floor(level)))

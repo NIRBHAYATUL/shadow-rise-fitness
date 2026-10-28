@@ -1,6 +1,6 @@
 {
   "target_count": 100,
-  "accepted_count": 32,
+  "accepted_count": 37,
   "note": "Unfinished levels reuse their current rank anchor explicitly. Not100distinctimages.",
   "entries": [
     {
@@ -187,6 +187,46 @@
       "anchor_level": 21,
       "meaning": "Soft H-chest harness with flat pouch and thigh cargo pockets",
       "sha256": "9c1c52c129c15af53ae7ad162189ea576b6d9bc17c1dd1fb843953909e590cea"
+    },
+    {
+      "level": 26,
+      "src": "/body/level-026.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 21,
+      "meaning": "Diagonal satchel, sleeve pocket and thigh cargo pockets",
+      "sha256": "42a862f1cb86f5f86a95ae3346a2d68d8bcdf6b6375e54aef95fd05ca6647eff"
+    },
+    {
+      "level": 27,
+      "src": "/body/level-027.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 21,
+      "meaning": "Midhip four-zip weather jacket with shoulder and elbow reinforcement",
+      "sha256": "b3e04bb3e7602e018d1d358d2cfc4e3eb16955c45694249173c031d4eefdaa51"
+    },
+    {
+      "level": 28,
+      "src": "/body/level-028.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 21,
+      "meaning": "Hooded lightweight parka with drawcord and flat hip pockets",
+      "sha256": "739cbe51a1337682e5ddd3b59ac0be6fed7175f683a6988aa5d195b209572f5a"
+    },
+    {
+      "level": 29,
+      "src": "/body/level-029.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 21,
+      "meaning": "Double-snap weathercoat with shoulder tabs and breast flaps",
+      "sha256": "ebd191edb36bcc7c485ec01a3632af61ac3171d7cc066d019429436ed1ee30de"
+    },
+    {
+      "level": 30,
+      "src": "/body/level-030.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 21,
+      "meaning": "Longer navy fieldcoat with lightblue piping/collar facing bridges approved B-Rank31",
+      "sha256": "8b195e12de7b1d4b41cbf0269fa88ab6675206792aa52e9a3cc3b493a217f927"
     },
     {
       "level": 31,
