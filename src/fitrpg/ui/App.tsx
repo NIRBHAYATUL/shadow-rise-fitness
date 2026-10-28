@@ -7,6 +7,7 @@ import { ROSTER, filterRoster, Hunter } from '../lib/roster'
 import * as g from '../lib/game'
 import { titleFor, PROFILE_TITLES, ANIME_ANCHORS, bodyBlend, FULLBODY } from '../lib/levels'
 import { dayPlan } from '../lib/plan'
+import * as pg from '../lib/progression'
 
 const env = import.meta.env
 // Public client values (safe to ship): project URL and publishable key. Data is protected by row level security.
@@ -152,6 +153,13 @@ export default function App({ page = 'home' }: { page?: Page }) {
       {page === 'progress' && <>
         <div className="card stats"><div className="tag">PROGRESS</div><h2>LEVEL {lv.level}</h2><div className="bar"><div style={{ width: `${(lv.into / lv.need) * 100}%` }} /></div><small>XP {lv.into} / {lv.need}</small><small>Days completed: {s.progress.doneDays.length}</small></div>
         <div className="card quest"><div className="tag">RECENT SESSIONS</div><ul>{(s.progress.sessions ?? []).slice(-14).reverse().map((x, i) => <li key={i}><span>{x.day}</span><b>{Math.floor(x.seconds / 60)} min {x.seconds % 60} s</b></li>)}{!(s.progress.sessions ?? []).length && <li><span>No sessions yet</span></li>}</ul></div>
+        <div className="card quest" data-testid="progression"><div className="tag">AUTOMATIC PROGRESSION</div>
+          <small>Suggested steps, not medical advice. Not clinically validated.</small>
+          <small>{pg.status(s.progress.prog ?? pg.emptyProg())}</small>
+          <small>Your routine stays the same until your readiness review is recorded. Warm-up (5 min) and cool-down (2 min) never change.</small>
+          {s.progress.prog?.lock && <div className="err">Stop exercising and rest if you get chest pain or tightness, dizziness or faintness, unusual breathlessness, or a new irregular heartbeat. If symptoms are severe or you faint, call 112 (India) immediately. Please get medical advice before your next workout. Progression stays locked until you tell us you have spoken to a medical professional and that they said exercise is okay for you.</div>}
+          {s.progress.prog?.lastAction && <div><small>Last change: {s.progress.prog.lastAction.ex} moved up after your last sessions were Easy. Only this exercise changed.</small><button className="btn ghost" onClick={() => update({ ...s.progress, prog: pg.revertLast(s.progress.prog) })}>UNDO LAST CHANGE</button></div>}
+        </div>
       </>}
       {page === 'settings' && <>
         <div className="card stats"><div className="tag">SETTINGS</div>
