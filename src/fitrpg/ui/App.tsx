@@ -8,6 +8,7 @@ import * as g from '../lib/game'
 import { titleFor, PROFILE_TITLES, ANIME_ANCHORS, bodyBlend, FULLBODY } from '../lib/levels'
 import { dayPlan, reviewedDayPlan } from '../lib/plan'
 import * as pg from '../lib/progression'
+import { recordPending, clearPending, readPending, withPending, reconcileSafety } from '../lib/safetyOutbox'
 
 const env = import.meta.env
 // Public client values (safe to ship): project URL and publishable key. Data is protected by row level security.
@@ -62,14 +63,16 @@ export default function App({ page = 'home' }: { page?: Page }) {
   const [sym, setSym] = useState<g.Symptom | null>(null)
 
   useEffect(() => { if (step && qDay && qDay !== today()) { setStep(null); setFeel(null); setSym(null); setQDay(null); setNotice('The date changed while the quest popup was open, so it was cancelled. Nothing was awarded. Start again for today.') } }, [tk, step, qDay])
-  useEffect(() => { if (cachedSession) return; backend?.restore().then(r => { if (r) { cachedSession = r; setS(r) } else { cachedSession = null; setS(null) } }).catch(() => {}) }, [])
+  useEffect(() => { if (cachedSession) return; backend?.restore().then(r0 => { const r = r0 ? withPending(r0) : r0; if (r) { cachedSession = r; setS(r) } else { cachedSession = null; setS(null) } }).catch(() => {}) }, [])
   async function logout() { await Promise.race([saveChain.catch(() => {}), new Promise(r => setTimeout(r, 8000))]); if ((pendingSaves > 0 || saveStatus === 'failed') && !window.confirm('Your last change has not been saved to the server. If you log out now it will be lost. Log out anyway?')) return; await backend?.signOut(); sessionGen++; pendingSaves = 0; setStatus('idle'); setSaveErr(''); cachedSession = null; lsSet('srf-t0', null); setS(null); setU(''); setP(''); setP2('') }
   async function auth() {
     setErr('')
     if (mode === 'up' && p !== p2) return setErr('Passwords do not match.')
-    try { const r = await (mode === 'up' ? backend!.signUp(u, p) : backend!.signIn(u, p)); cachedSession = r; setS(r) } catch (e: any) { setErr(e.message) }
+    try { const r = withPending(await (mode === 'up' ? backend!.signUp(u, p) : backend!.signIn(u, p))); cachedSession = r; setS(r) } catch (e: any) { setErr(e.message) }
   }
-  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); const gen = sessionGen; pendingSaves++; setStatus('saving'); const job = saveChain.then(() => saveAny(s, { progress: pr })); saveChain = job.catch(() => {}); try { const saved = await job; if (gen !== sessionGen) return; pendingSaves--; if (pendingSaves === 0) { if (saved?.progress) { const canonical = { ...n, progress: saved.progress }; cachedSession = canonical; setS(canonical) }; setStatus('saved') } } catch (e) { if (gen !== sessionGen) return; pendingSaves--; setStatus('failed'); setSaveErr(e?.message?.includes('Progress changed on another device') ? e.message : 'Could not save to the server. Check your connection and try again.') } }
+  async function update(pr: g.Progress) { if (!s) return; const n = { ...s, progress: pr }; cachedSession = n; setS(n); setSaveErr(''); const gen = sessionGen; if (backend) recordPending(s.username, pr); pendingSaves++; setStatus('saving'); const job = saveChain.then(() => saveAny(s, { progress: pr })); saveChain = job.catch(() => {}); try { const saved = await job; if (gen !== sessionGen) return; pendingSaves--; if (pendingSaves === 0) { if (saved?.progress) { const canonical = { ...n, progress: saved.progress }; cachedSession = canonical; setS(canonical) }; setStatus('saved'); clearPending(s.username) } } catch (e) { if (gen !== sessionGen) return; pendingSaves--; setStatus('failed'); setSaveErr(e?.message?.includes('Progress changed on another device') ? e.message : 'Could not save to the server. Check your connection and try again.'); if (backend && readPending(s.username)) void safetyRetry(s.username, e?.message?.includes('Progress changed on another device')) } }
+  async function safetyRetry(username: string, conflict: boolean) { const r = await reconcileSafety(backend!, username); if (r.ok && r.session) { cachedSession = r.session; setS(r.session); setStatus('saved'); setSaveErr(''); setNotice(conflict ? 'Your safety report was saved. Other changes on this device were not saved. Progress now shows the latest saved version.' : 'Your safety report was saved.') } else if (!r.ok) setSaveErr('Your safety report is not saved to the server yet. It is kept on this device and the programme stays locked here. It retries when you open the app again.') }
+  useEffect(() => { if (s && backend && readPending(s.username)) void safetyRetry(s.username, false) }, [s?.username])
   const lv = useMemo(() => g.levelFromXp(s?.progress.xp ?? 0), [s])
   const band = Math.min(9, Math.floor((lv.level - 1) / 10))
   const [t0, setT0r] = useState<number | null>(() => { const v = Number(lsGet('srf-t0')); return v > 0 ? v : null })
