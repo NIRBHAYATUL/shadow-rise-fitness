@@ -113,7 +113,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     if (!feel) return
     if (g.needsSymptomStep(feel) && !sym) return setStep('symptom')
     if (qDay !== day) { setStep(null); setFeel(null); setSym(null); setQDay(null); return setNotice('The date changed while the quest popup was open, so it was cancelled. Nothing was awarded. Start again for today.') }
-    await update(g.complete(s!.progress, qDay, feel, sym)); setStep(null); setFeel(null); setSym(null); setQDay(null)
+    { const before = s!.progress; let after = g.complete(before, qDay, feel, sym); if (after.doneDays.length > before.doneDays.length) after = { ...after, prog: pg.recordDay(before.prog, qDay, feel, sym ?? 'none', dayPlan(qDay).moves.map(m => m[0])) }; await update(after) }; setStep(null); setFeel(null); setSym(null); setQDay(null)
   }
   return (<main className={motion ? 'sys' : 'sys still'}>
     <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Also pending: a different avatar image for every level. Sung Jinwoo is the only avatar. He changes with each rank band (10 art steps, shown one at a time, no blending). Plans after 1 Nov are pending.</div>
@@ -155,7 +155,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
         <div className="card quest"><div className="tag">RECENT SESSIONS</div><ul>{(s.progress.sessions ?? []).slice(-14).reverse().map((x, i) => <li key={i}><span>{x.day}</span><b>{Math.floor(x.seconds / 60)} min {x.seconds % 60} s</b></li>)}{!(s.progress.sessions ?? []).length && <li><span>No sessions yet</span></li>}</ul></div>
         <div className="card quest" data-testid="progression"><div className="tag">AUTOMATIC PROGRESSION</div>
           <small>Suggested steps, not medical advice. Not clinically validated.</small>
-          <small>{pg.status(s.progress.prog ?? pg.emptyProg())}</small>
+          <small>{pg.status(s.progress.prog ?? pg.emptyProg())}</small><small>Not active yet: nothing changes before your readiness review is recorded. Automatic sets are not available. Rep steps are planned first.</small>
           <small>Your routine stays the same until your readiness review is recorded. Warm-up (5 min) and cool-down (2 min) never change.</small>
           {s.progress.prog?.lock && <div className="err">Stop exercising and rest if you get chest pain or tightness, dizziness or faintness, unusual breathlessness, or a new irregular heartbeat. If symptoms are severe or you faint, call 112 (India) immediately. Please get medical advice before your next workout. Progression stays locked until you tell us you have spoken to a medical professional and that they said exercise is okay for you.</div>}
           {s.progress.prog?.lastAction && <div><small>Last change: {s.progress.prog.lastAction.ex} moved up after your last sessions were Easy. Only this exercise changed.</small><button className="btn ghost" onClick={() => update({ ...s.progress, prog: pg.revertLast(s.progress.prog) })}>UNDO LAST CHANGE</button></div>}
@@ -168,6 +168,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
     </section>
     {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>}
     {step === 'symptom' && <div className="modal"><div className="card"><h3>ANY OF THESE?</h3>{([['pain', 'Pain'], ['dizziness', 'Dizziness'], ['breathing', 'Breathing feels unusual'], ['none', 'None of these']] as const).map(([k, l]) => <button key={k} className={'opt' + (sym === k ? ' on' : '')} onClick={() => setSym(k)}>{l}</button>)}
-      {sym && sym !== 'none' && <div className="err">Stop for today. Rest, and check in with a doctor if it continues.</div>}<button className="btn" disabled={!sym} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>}
+      {sym === 'pain' && <div className="err">Skip that exercise today. No increases for it until you have done it pain-free twice. If the pain keeps coming back, please get medical advice about that exercise.</div>}
+      {(sym === 'dizziness' || sym === 'breathing') && <div className="err">Stop exercising and rest. If symptoms are severe or you faint, call 112 (India) immediately. Please get medical advice before your next workout. Progression stays locked until you tell us you have spoken to a medical professional and that they said exercise is okay for you.</div>}<button className="btn" disabled={!sym} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>}
   </main>)
 }

@@ -115,3 +115,21 @@ export function status(s: ProgState): string {
   if (!s.review || !s.activatedOn) return 'Waiting for the readiness review.'
   return 'Progression is on. Changes are small and you can undo them.'
 }
+
+// Maps today's single feel/symptom answer onto the day's covered exercises. Conservative: fullQuota and
+// next-day recovery are not collected yet, so entries are never eligible. This only records history and locks.
+const EX_BY_NAME: [RegExp, Ex][] = [[/mini-squat/i, 'mini-squat'], [/bridge/i, 'bridge'], [/wall push-up/i, 'wall-push-up'], [/bird-dog/i, 'bird-dog'], [/calf raise/i, 'calf-raise']]
+export function exercisesIn(moveNames: string[]): Ex[] {
+  const out: Ex[] = []
+  for (const n of moveNames) for (const [re, ex] of EX_BY_NAME) if (re.test(n) && !out.includes(ex)) out.push(ex)
+  return out
+}
+export function recordDay(s: ProgState | undefined, day: string, feel: Feel3, symptom: 'pain' | 'dizziness' | 'breathing' | 'none', moveNames: string[]): ProgState {
+  let st = s ?? emptyProg()
+  const exs = exercisesIn(moveNames)
+  if (!exs.length) return st
+  const sym: Sym = symptom
+  // A symptom on the day is not tied to one exercise (the app asks once), so it applies to every move that day.
+  for (const ex of exs) st = recordFeedback(st, { day, ex, feel, symptom: sym, fullQuota: false, recoveryNextDay: 'unknown' })
+  return st
+}
