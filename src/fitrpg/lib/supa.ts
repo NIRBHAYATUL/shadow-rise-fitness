@@ -4,7 +4,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { Backend, Session, checkCreds } from './store'
 import { emptyProgress } from './game'
-export const ATOMIC_SAVE_ENABLED = false // Enable only after verified migration and live race tests.
+export const ATOMIC_SAVE_ENABLED = true // Migration 20261028_atomic_safety applied to production and race/RLS/old-client tests passed on 28 Oct 2026.
 export function supabaseBackend(url: string, anonKey: string, atomic = ATOMIC_SAVE_ENABLED): Backend {
   const sb = createClient(url, anonKey)
   let revision: number | null = null
