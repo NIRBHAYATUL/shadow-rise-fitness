@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Exercise Library is a read-only section shared across signed-in pages; its playback boundary blocks all guides for safety locks and individual guides for recorded holds, without changing prescription or save contracts.

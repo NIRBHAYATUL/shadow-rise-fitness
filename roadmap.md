@@ -1,5 +1,7 @@
 # Shadow Rise Fitness frontend rebuild
 
+- [x] Add bounded existing-guide Exercise Library section/navigation, independent of today's prescription, with lock/hold playback gates. Focused tests pending below.
+
 - [ ] Confirm an enforceable daily-free-only spending boundary. Blocked: only 2.00 daily credits reported; no free-only build funding control exposed.
 - [ ] Inspect remaining auth/save/safety code and fresh diagnostics without changing production data.
 - [ ] Rebuild cohesive dashboard, authentication presentation, exercise library and level registry.

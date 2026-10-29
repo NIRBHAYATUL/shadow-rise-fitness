@@ -9,6 +9,7 @@ import { titleFor, PROFILE_TITLES, ANIME_ANCHORS, bodyBlend, bodyArt, ACCEPTED_A
 import { dayPlan, reviewedDayPlan } from '../lib/plan'
 import * as pg from '../lib/progression'
 import { recordPending, clearPending, readPending, withPending, reconcileSafety } from '../lib/safetyOutbox'
+import ExerciseLibrary from './ExerciseLibrary'
 
 const env = import.meta.env
 // Public client values (safe to ship): project URL and publishable key. Data is protected by row level security.
@@ -129,12 +130,12 @@ export default function App({ page = 'home' }: { page?: Page }) {
     if (qDay !== day) { setStep(null); setFeel(null); setSym(null); setQDay(null); return setNotice('The date changed while the quest popup was open, so it was cancelled. Nothing was awarded. Start again for today.') }
     { const before = s!.progress; let after = g.complete(before, qDay, feel, sym); if (after.doneDays.length > before.doneDays.length) after = { ...after, prog: pg.recordDay(before.prog, qDay, feel, sym ?? 'none', dayPlan(qDay).moves.map(m => m[0]), { finished: doneEx as any, painEx: painEx as any }) }; await update(after) }; setDoneEx([]); setPainEx([]); setStep(null); setFeel(null); setSym(null); setQDay(null)
   }
-  return (<main className={motion ? 'sys' : 'sys still'}>
+  return (<main id="top" className={motion ? 'sys' : 'sys still'}>
     <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Avatar art: {ACCEPTED_ART_COUNT}/100 distinct drawings ready. Levels 1-30 each have their own drawing. Unfinished levels hold their current rank anchor, not a unique drawing. Sung Jinwoo is the only avatar. After 1 Nov the week 1 baseline repeats unchanged until the readiness review is done. Automatic progression is off.</div>
     {saveErr && <div className="err" role="alert">{saveErr}</div>}
     {notice && <div className="err" role="status">{notice}</div>}
     {status !== 'idle' && !saveErr && <div className="srf-save" role="status">{status === 'saving' ? 'Saving to server...' : status === 'saved' ? 'Saved to server.' : 'Save failed.'}</div>}
-    <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}</nav>
+    <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}<a href="#exercise-library">Exercise Library</a></nav>
     <section className="dash">
       {page === 'home' && <>
       <div className="card hero"><figure className="now" style={{ ['--glow' as any]: lv.level / 100 }}>{h.id === 'sung-jinwoo' ? <div className="body" data-testid="fullbody">{(() => { const b = bodyBlend(lv.level); const art = bodyArt(lv.level); return <div style={{ filter: `drop-shadow(0 0 ${4 + b.aura * 22}px rgba(140,90,255,${0.2 + b.aura * 0.6}))` }}><img className="art body" src={art.src} alt={`Sung Jinwoo full body, level ${lv.level}${art.distinct ? ', distinct drawing' : `, rank anchor from level ${art.artLevel}`}`} title={art.distinct ? `Distinct level ${lv.level} drawing` : `Level ${lv.level} art pending. Showing level ${art.artLevel} rank anchor.`} /></div> })()}<img className="face" src={`/avatars/jinwoo-anime/${ANIME_ANCHORS[band]}.jpg`} alt="Anime face" /></div> : FULLBODY[h.id] ? <img className="art body" src={FULLBODY[h.id]} alt={h.name + ' full body'} /> : <Portrait h={h} />}<figcaption>{h.name}</figcaption></figure>
@@ -185,6 +186,7 @@ export default function App({ page = 'home' }: { page?: Page }) {
         <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label>        <small>Words on screen are English. Trainer voice demos are in Hindi, with English captions.</small><button className="btn ghost" onClick={logout}>LOG OUT</button>{!real && <button className="btn ghost" onClick={() => { localStorage.removeItem(DEMO); location.href = '/' }}>RESET DEMO DATA</button>}</div>
       </>}
     </section>
+    <ExerciseLibrary locked={locked} holds={s.progress.prog?.holds ?? {}} />
     {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<div className="quota"><small style={{ display: 'block', margin: '6px 0' }}>Optional: tick the moves where you did every rep and set.</small>{pg.exercisesIn(dayPlan(qDay ?? day).moves.map(m => m[0])).map(ex => <label key={ex} className="mo" style={{ display: 'block' }}><input type="checkbox" checked={doneEx.includes(ex)} onChange={() => toggle(doneEx, setDoneEx, ex)} /> {ex}</label>)}</div><button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>}
     {step === 'symptom' && <div className="modal"><div className="card"><h3>ANY OF THESE?</h3>{([['pain', 'Pain'], ['dizziness', 'Dizziness or faintness'], ['chest', 'Chest pain or tightness'], ['breathing', 'Breathing feels unusual'], ['irregular-heartbeat', 'New irregular heartbeat'], ['none', 'None of these']] as const).map(([k, l]) => <button key={k} className={'opt' + (sym === k ? ' on' : '')} onClick={() => setSym(k)}>{l}</button>)}
       {sym === 'pain' && <div><small style={{ display: 'block', margin: '6px 0' }}>Optional: which move hurt? If you pick none, every move today is held.</small>{pg.exercisesIn(dayPlan(qDay ?? day).moves.map(m => m[0])).map(ex => <label key={ex} className="mo" style={{ display: 'block' }}><input type="checkbox" checked={painEx.includes(ex)} onChange={() => toggle(painEx, setPainEx, ex)} /> {ex}</label>)}</div>}
