@@ -25,5 +25,8 @@ User authorizes ONLY remaining daily FREE credits, no paid balance, services, up
 7. Run affected/existing tests using `bunx vitest run`. Inspect automatic build/typecheck diagnostics. Use local isolated fixtures for authenticated UI checks if legitimate auth cannot be used without production mutation. Clearly distinguish fixture verification from live authenticated verification. Verify each demo and controls across mobile and desktop with Playwright screenshots and no private-data logging. Report any unverified flow.
 8. Before quota is exhausted, update this file and roadmap with exact edits, actual tests, individual verified demos, remaining art/audio/QA, and credit readings. Do not call the entire rebuild complete without verification. Do not publish.
 
+## Last credit reading
+Second lookup: 0.90 daily credits remaining versus 2.00 initially, an observed 1.10-credit reduction during inspection and documentation; final-turn charges are not yet known. No paid service, upgrade, top-up, generation or publishing action was invoked. Stop now rather than risk exhausting the free boundary.
+
 ## Current deliverable status
 Frontend files changed: none. New working motion demos: none. Tests run: none. Remaining genuine art: 63 levels. Local audio QA: all eight unverified. Live authenticated flow: unverified. Files added this turn: this note, `roadmap.md`, and project constraint memory only.
