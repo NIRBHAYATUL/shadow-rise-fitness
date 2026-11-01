@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Exercise Library is a read-only section shared across signed-in pages; its playback boundary blocks all guides for safety locks and individual guides for recorded holds, without changing prescription or save contracts.
+- CoreExperience owns presentation while App retains the existing session, serialized saving and safety-outbox bridge; confirmed completion uses a separate cosmetic-only rule and must never fabricate health or readiness observations.
