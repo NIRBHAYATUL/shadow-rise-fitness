@@ -49,7 +49,7 @@ function Target({ session, update, status, t0, setT0 }: Pick<Props, 'session' | 
   return <section className="srf-target"><div className="srf-section-heading"><div><span className="srf-eyebrow">DAILY QUEST · {day}</span><h2>{plan.label}</h2></div><span className="srf-pill">Reviewed baseline</span></div>
     {locked || pendingHealth ? <div className="srf-alert" role="alert">Training is paused by a recorded safety restriction. Stop exercising and get medical advice before your next workout. Existing restrictions remain in place.</div> : <div className="srf-moves">{plan.moves.map(([name, dose], i) => {
       const guide = EXISTING_GUIDES.find(x => name.toLowerCase().includes(x.id === 'bottle-curl' ? 'bottle curl' : x.id === 'room-walk' ? 'walk' : x.id.replaceAll('-', '-')))
-      const held = guide && Boolean(p.prog?.holds[guide.id])
+      const held = guide && Boolean(p.prog?.holds?.[guide.id])
       return <div className="srf-move" key={name}><span className="srf-move-index">{String(i + 1).padStart(2, '0')}</span><div><h3>{name}</h3>{held && <span className="srf-alert">On hold — skip this movement. No playback.</span>}</div><strong>{dose}</strong></div>
     })}{!plan.moves.length && <p className="srf-muted">{plan.kind === 'rest' ? 'Recovery day. No training prescribed.' : 'No workout prescribed. Readiness review pending.'}</p>}</div>}
     <div className="srf-actions"><Button className="srf-primary" disabled={!eligible} onClick={() => { setFeedback(null); setOpenedDay(day) }}>{done ? <><Check /> Completed today</> : <>Complete daily target <ChevronRight /></>}</Button>
