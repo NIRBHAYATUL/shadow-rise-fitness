@@ -8,9 +8,9 @@ export const Route = createFileRoute("/progress")({
   head: () => ({
     meta: [
       { title: "Progress - Shadow Rise Fitness" },
-      { name: "description", content: "Level up your hunter with daily home workout quests." },
-      { property: "og:title", content: "Shadow Rise Fitness" },
-      { property: "og:description", content: "Level up your hunter with daily home workout quests." },
+      { name: "description", content: "Your account’s XP, cosmetic level and recorded fitness sessions." },
+      { property: "og:title", content: "Player Progress - Shadow Rise Fitness" },
+      { property: "og:description", content: "Your account’s XP, cosmetic level and recorded fitness sessions." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

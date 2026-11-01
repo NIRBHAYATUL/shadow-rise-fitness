@@ -8,9 +8,9 @@ export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
       { title: "Settings - Shadow Rise Fitness" },
-      { name: "description", content: "Level up your hunter with daily home workout quests." },
-      { property: "og:title", content: "Shadow Rise Fitness" },
-      { property: "og:description", content: "Level up your hunter with daily home workout quests." },
+      { name: "description", content: "Shadow Rise Fitness motion preferences and account controls." },
+      { property: "og:title", content: "System Settings - Shadow Rise Fitness" },
+      { property: "og:description", content: "Shadow Rise Fitness motion preferences and account controls." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

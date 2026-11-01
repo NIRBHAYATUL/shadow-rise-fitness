@@ -8,9 +8,9 @@ export const Route = createFileRoute("/today")({
   head: () => ({
     meta: [
       { title: "Today's Workout - Shadow Rise Fitness" },
-      { name: "description", content: "Level up your hunter with daily home workout quests." },
-      { property: "og:title", content: "Shadow Rise Fitness" },
-      { property: "og:description", content: "Level up your hunter with daily home workout quests." },
+      { name: "description", content: "Reviewed daily room workouts with confirmed completion and safe server saving." },
+      { property: "og:title", content: "Today’s Workout - Shadow Rise Fitness" },
+      { property: "og:description", content: "Reviewed daily room workouts with confirmed completion and safe server saving." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
