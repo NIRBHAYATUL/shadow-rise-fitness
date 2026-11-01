@@ -1,5 +1,7 @@
 # Shadow Rise Fitness frontend rebuild
 
+- [ ] November 1 core refresh: modular account presentation, dashboard and today's workout with compulsory Easy/Medium/Hard confirmation; preserve existing accounts, atomic saving and safety restrictions. No new/unreviewed exercise prescription or fabricated unique art.
+
 - [x] Add bounded existing-guide Exercise Library section/navigation, independent of today's prescription, with lock/hold playback gates. Focused tests pending below.
 
 - [ ] Confirm an enforceable daily-free-only spending boundary. Blocked: only 2.00 daily credits reported; no free-only build funding control exposed.
