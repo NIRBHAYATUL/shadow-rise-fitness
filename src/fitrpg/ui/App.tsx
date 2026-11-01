@@ -9,7 +9,7 @@ import { titleFor, PROFILE_TITLES, ANIME_ANCHORS, bodyBlend, bodyArt, ACCEPTED_A
 import { dayPlan, reviewedDayPlan } from '../lib/plan'
 import * as pg from '../lib/progression'
 import { recordPending, clearPending, readPending, withPending, reconcileSafety } from '../lib/safetyOutbox'
-import ExerciseLibrary from './ExerciseLibrary'
+import CoreExperience from './CoreExperience'
 
 const env = import.meta.env
 // Public client values (safe to ship): project URL and publishable key. Data is protected by row level security.
@@ -83,114 +83,16 @@ export default function App({ page = 'home' }: { page?: Page }) {
   const [, tick] = useState(0)
   useEffect(() => { if (t0 === null) return; const i = setInterval(() => tick(x => x + 1), 1000); return () => clearInterval(i) }, [t0])
 
-  if (!s && !real) return (
-    <main className={motion ? 'sys' : 'sys still'}><section className="card auth">
-      <div className="tag">[ SYSTEM ] DEMO MODE</div><h1>START</h1>
-      <p className="note">Demo only: no password, progress is saved in this browser only. Real accounts with server saving need the account service connected.</p>
-      <button className="btn" onClick={() => setS(loadDemo())}>START DEMO</button>
-    </section></main>)
-  if (!s && restoreErr) return (
-    <main className={motion ? 'sys' : 'sys still'}><section className="card auth">
-      <div className="tag">[ SYSTEM ] CONNECTION</div><h1>CANNOT VERIFY YOUR LOGIN</h1>
-      <p className="note">The app could not reach the server, so it cannot confirm who is signed in. You are not signed out, and nothing was deleted. Any safety report not yet sent stays on this device. No workout is shown until your login is verified. Check your connection, then try again.</p>
-      <button className="btn" onClick={() => { setRestoreErr(false); doRestore() }}>TRY AGAIN</button>
-    </section></main>)
-  if (!s) return (
-    <main className={motion ? 'sys' : 'sys still'}><section className="card auth">
-      <div className="tag">[ SYSTEM ] PLAYER REGISTRATION</div>
-      <h1>{mode === 'up' ? 'CREATE ACCOUNT' : 'LOG IN'}</h1>
-      <input placeholder="Username" value={u} onChange={e => setU(e.target.value.toLowerCase())} autoComplete="username" />
-      <input placeholder="Password (8 to 72 characters)" type="password" value={p} onChange={e => setP(e.target.value)} autoComplete={mode === 'up' ? 'new-password' : 'current-password'} />
-      {mode === 'up' && <input placeholder="Confirm password" type="password" value={p2} onChange={e => setP2(e.target.value)} autoComplete="new-password" />}
-      {err && <div className="err" role="alert">{err}</div>}
-      <button className="btn" onClick={auth}>{mode === 'up' ? 'CREATE ACCOUNT' : 'LOG IN'}</button>
-      <p className="note">Accounts use a username and password only, with no email. There is no password reset: if you lose your password, you will need to create a new account.</p>
-      <a href="#" onClick={e => { e.preventDefault(); setMode(mode === 'up' ? 'in' : 'up'); setErr('') }}>{mode === 'up' ? 'Already a player? Log in' : 'New player? Create account'}</a>
-    </section></main>)
-
-  if (!s.avatar) {
-    const list = filterRoster(tab)
-    return (<main className={motion ? 'sys' : 'sys still'}><section className="card wide">
-      <div className="tag">[ SYSTEM ] CHOOSE YOUR HUNTER</div><h1>AVATAR SELECT</h1>
-      <div className="grid">{list.map(h => <button key={h.id} className={'tile' + (pick === h.id ? ' sel' : '')} onClick={() => setPick(h.id)}>
-        <Portrait h={h} /><b>{h.name}</b><i>{h.group}{h.note ? ' - ' + h.note : ''}</i></button>)}</div>
-      <button className="btn ghost" onClick={logout}>LOG OUT</button> <button className="btn" disabled={!pick} onClick={async () => { try { await saveAny(s, { avatar: pick! }) } catch { setErr('Could not save your avatar. Try again.'); return } const n = { ...s, avatar: pick }; cachedSession = n; setS(n) }}>CONFIRM AVATAR</button>
-    </section></main>)
-  }
-
-  const h = ROSTER.find(x => x.id === s.avatar) ?? ROSTER.find(x => x.id === 'sung-jinwoo')! // unknown stored id: show a placeholder, never change the stored choice
-  const day = today()
-  const done = s.progress.doneDays.includes(day) || s.progress.doneDays.includes('rest:' + day)
-  const plan = reviewedDayPlan(day, s.progress.future, s.progress.prog)
-  const locked = !!s.progress.prog?.lock // Tier 1 symptom lock: fail closed, no workout is offered or startable until it is reviewed
-  const canTrain = plan.kind === 'train' && !locked
-  async function finish() {
-    if (!feel || locked) return
-    if (g.needsSymptomStep(feel) && !sym) return setStep('symptom')
-    if (qDay !== day) { setStep(null); setFeel(null); setSym(null); setQDay(null); return setNotice('The date changed while the quest popup was open, so it was cancelled. Nothing was awarded. Start again for today.') }
-    { const before = s!.progress; let after = g.complete(before, qDay, feel, sym); if (after.doneDays.length > before.doneDays.length) after = { ...after, prog: pg.recordDay(before.prog, qDay, feel, sym ?? 'none', dayPlan(qDay).moves.map(m => m[0]), { finished: doneEx as any, painEx: painEx as any }) }; await update(after) }; setDoneEx([]); setPainEx([]); setStep(null); setFeel(null); setSym(null); setQDay(null)
-  }
-  return (<main id="top" className={motion ? 'sys' : 'sys still'}>
-    <div className="demo" role="status">Early version. Accounts and server saving are live. Hindi trainer demos are live for all 8 moves (simple schematic guides, not medical advice). Avatar art: {ACCEPTED_ART_COUNT}/100 distinct drawings ready. Levels 1-30 each have their own drawing. Unfinished levels hold their current rank anchor, not a unique drawing. Sung Jinwoo is the only avatar. After 1 Nov the week 1 baseline repeats unchanged until the readiness review is done. Automatic progression is off.</div>
-    {saveErr && <div className="err" role="alert">{saveErr}</div>}
-    {notice && <div className="err" role="status">{notice}</div>}
-    {status !== 'idle' && !saveErr && <div className="srf-save" role="status">{status === 'saving' ? 'Saving to server...' : status === 'saved' ? 'Saved to server.' : 'Save failed.'}</div>}
-    <nav className="nav" aria-label="Main">{NAV.map(([k, to, label]) => <Link key={k} to={to as any} className={page === k ? 'on' : ''}>{label}</Link>)}<a href="#exercise-library">Exercise Library</a></nav>
-    <section className="dash">
-      {page === 'home' && <>
-      <div className="card hero"><figure className="now" style={{ ['--glow' as any]: lv.level / 100 }}>{h.id === 'sung-jinwoo' ? <div className="body" data-testid="fullbody">{(() => { const b = bodyBlend(lv.level); const art = bodyArt(lv.level); return <div style={{ filter: `drop-shadow(0 0 ${4 + b.aura * 22}px rgba(140,90,255,${0.2 + b.aura * 0.6}))` }}><img className="art body" src={art.src} alt={`Sung Jinwoo full body, level ${lv.level}${art.distinct ? ', distinct drawing' : `, rank anchor from level ${art.artLevel}`}`} title={art.distinct ? `Distinct level ${lv.level} drawing` : `Level ${lv.level} art pending. Showing level ${art.artLevel} rank anchor.`} /></div> })()}<img className="face" src={`/avatars/jinwoo-anime/${ANIME_ANCHORS[band]}.jpg`} alt="Anime face" /></div> : FULLBODY[h.id] ? <img className="art body" src={FULLBODY[h.id]} alt={h.name + ' full body'} /> : <Portrait h={h} />}<figcaption>{h.name}</figcaption></figure>
-        <div className="ranks"><span className="rank">{titleFor(lv.level)}</span><span className="lvl">LV {lv.level}</span>{s.progress.title && <span className="title-badge">{s.progress.title}</span>}</div></div>
-      <div className="card stats"><div className="tag">[ SYSTEM ] {h.name.toUpperCase()}</div><h2>LEVEL {lv.level}</h2>
-        <div className="bar"><div style={{ width: `${(lv.into / lv.need) * 100}%` }} /></div><small>XP {lv.into} / {lv.need}</small>
-        
-      </div>
-        <div className="card quest"><div className="tag">TODAY - {plan.label}</div><p>{locked ? 'Workouts are paused after your safety report. Please get medical advice before your next workout. You can still report symptoms.' : canTrain ? (done ? (status === 'saving' ? 'Quest complete. Saving to server...' : 'Quest complete. Nice work.') : 'Your quest is ready.') : 'No training today. Rest counts, no penalty.'}</p><Link className="btn" to={'/today' as any}>OPEN TODAY'S WORKOUT</Link></div>
-      </>}
-      {page === 'today' && <>
-      <div className="card quest"><div className="tag">DAILY QUEST - {day} - {plan.label}</div>
-        {locked ? <p className="err" data-testid="locked-plan">Workout paused. No exercises are shown while your safety report is under review. Rest and get medical advice first.</p> : <ul>{plan.moves.map(([n, r]) => <li key={n}><span>{n}</span><b>{r}</b>{videoFor(n) && motion && <img className="loop" loading="lazy" src={videoFor(n)!.replace('-hi.mp4', '-loop.gif')} alt={`${n}: silent movement loop`} />}{videoFor(n) && <details className="vid"><summary>Watch demo (Hindi voice, English captions)</summary><video controls preload="none" playsInline src={videoFor(n)} /></details>}</li>)}{!plan.moves.length && <li><span>{plan.kind === 'before' ? 'Your plan starts on Tue 27 Oct 2026.' : plan.kind === 'none' ? 'Next plan is pending. Nothing harder is unlocked by XP.' : 'No training today. Rest counts, no penalty.'}</span></li>}</ul>}
-        <div className="row"><button className="btn" disabled={done || !canTrain} onClick={() => { if (locked) return; setNotice(''); setQDay(day); update(g.startPending(s.progress, day)); setStep('feel') }}>{done ? 'DONE TODAY' : 'TARGET DONE'}</button>
-          <button className="btn ghost" disabled={done} onClick={() => update(g.rest(s.progress, day))}>REST TODAY</button>
-          <button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>
-      {(() => { const rd = pg.pendingRecoveryDay(s.progress.prog, day); return rd ? <div className="card quest" data-testid="recovery"><div className="tag">HOW DID YOU FEEL AFTER {rd}?</div><small style={{ display: 'block', margin: '6px 0' }}>Optional. This only helps plan future steps. Nothing changes today.</small><div className="row"><button className="btn ghost" onClick={() => update({ ...s.progress, prog: pg.setRecovery(s.progress.prog, rd, 'ok') })}>FINE, NORMAL</button><button className="btn ghost" onClick={() => update({ ...s.progress, prog: pg.setRecovery(s.progress.prog, rd, 'sore') })}>SORE OR TIRED</button></div></div> : null })()}
-      <div className="card quest" data-testid="report-symptom"><div className="tag">FEEL UNWELL?</div>
-        <small style={{ display: 'block', margin: '6px 0' }}>Chest pain or tightness, dizziness or faintness, unusual breathlessness, or a new irregular heartbeat: stop and rest. This does not use up your quest.</small>
-        <div className="row">{([['chest', 'CHEST PAIN'], ['dizziness', 'DIZZY'], ['breathing', 'BREATHLESS'], ['irregular-heartbeat', 'HEARTBEAT']] as const).map(([k, l]) => <button key={k} className="btn ghost" onClick={() => update({ ...s.progress, prog: pg.reportSymptom(s.progress.prog, day, k) })}>{l}</button>)}</div>
-        {s.progress.prog?.lock && <div className="err">Stop exercising and rest. If symptoms are severe or you faint, call 112 (India) immediately. Please get medical advice before your next workout. Progression stays locked until you tell us you have spoken to a medical professional and that they said exercise is okay for you.</div>}</div>
-      {!locked && <div className="card quest"><div className="tag">SESSION</div>
-        <div className="row"><button className="btn" onClick={() => { if (t0 === null) setT0(Date.now()); else { update(g.addSession(s.progress, day, (Date.now() - t0) / 1000)); setT0(null) } }}>{t0 === null ? 'START TIMER' : `STOP ${Math.floor((Date.now() - t0) / 60000)}:${String(Math.floor(((Date.now() - t0) / 1000) % 60)).padStart(2, '0')}`}</button>
-          <button className="btn ghost" onClick={() => update(g.setSets(s.progress, day, (s.progress.sets?.[day] ?? 0) - 1))}>-</button><b>Sets today: {s.progress.sets?.[day] ?? 0}</b><button className="btn ghost" onClick={() => update(g.setSets(s.progress, day, (s.progress.sets?.[day] ?? 0) + 1))}>+</button></div>
-        <div className="tag">RECENT SESSIONS</div><ul>{(s.progress.sessions ?? []).slice(-7).reverse().map((x, i) => <li key={i}><span>{x.day}</span><b>{Math.floor(x.seconds / 60)} min {x.seconds % 60} s</b></li>)}{!(s.progress.sessions ?? []).length && <li><span>No sessions yet</span></li>}</ul></div>}
-      </>}
-      {page === 'hunter' && <>
-      <div className="card hero"><figure className="now" style={{ ['--glow' as any]: lv.level / 100 }}>{h.id === 'sung-jinwoo' ? <div className="body" data-testid="fullbody">{(() => { const b = bodyBlend(lv.level); const art = bodyArt(lv.level); return <div style={{ filter: `drop-shadow(0 0 ${4 + b.aura * 22}px rgba(140,90,255,${0.2 + b.aura * 0.6}))` }}><img className="art body" src={art.src} alt={`Sung Jinwoo full body, level ${lv.level}${art.distinct ? ', distinct drawing' : `, rank anchor from level ${art.artLevel}`}`} title={art.distinct ? `Distinct level ${lv.level} drawing` : `Level ${lv.level} art pending. Showing level ${art.artLevel} rank anchor.`} /></div> })()}<img className="face" src={`/avatars/jinwoo-anime/${ANIME_ANCHORS[band]}.jpg`} alt="Anime face" /></div> : FULLBODY[h.id] ? <img className="art body" src={FULLBODY[h.id]} alt={h.name + ' full body'} /> : <Portrait h={h} />}<figcaption>{h.name}</figcaption></figure>
-        <div className="ranks"><span className="rank">{titleFor(lv.level)}</span><span className="lvl">LV {lv.level}</span>{s.progress.title && <span className="title-badge">{s.progress.title}</span>}</div></div>
-        <div className="card stats"><div className="tag">[ SYSTEM ] TITLES</div><h2>{titleFor(lv.level)}</h2>
-        <label className="mo">Title <select value={s.progress.title ?? ''} onChange={e => update({ ...s.progress, title: e.target.value || undefined })}><option value="">None</option>{PROFILE_TITLES.filter(t => lv.level >= t.at).map(t => <option key={t.name} value={t.name}>{t.name}</option>)}</select></label>
-        <small>Next title: {(PROFILE_TITLES.find(t => lv.level < t.at) ?? { name: 'all unlocked', at: 0 }).name}{PROFILE_TITLES.find(t => lv.level < t.at) ? ` at level ${PROFILE_TITLES.find(t => lv.level < t.at)!.at}` : ''}</small>
-        <small>Titles unlocked: {PROFILE_TITLES.filter(t => lv.level >= t.at).length} / {PROFILE_TITLES.length}</small></div>
-      </>}
-      {page === 'progress' && <>
-        <div className="card stats"><div className="tag">PROGRESS</div><h2>LEVEL {lv.level}</h2><div className="bar"><div style={{ width: `${(lv.into / lv.need) * 100}%` }} /></div><small>XP {lv.into} / {lv.need}</small><small>Days completed: {s.progress.doneDays.length}</small></div>
-        <div className="card quest"><div className="tag">RECENT SESSIONS</div><ul>{(s.progress.sessions ?? []).slice(-14).reverse().map((x, i) => <li key={i}><span>{x.day}</span><b>{Math.floor(x.seconds / 60)} min {x.seconds % 60} s</b></li>)}{!(s.progress.sessions ?? []).length && <li><span>No sessions yet</span></li>}</ul></div>
-        <div className="card quest" data-testid="progression"><div className="tag">AUTOMATIC PROGRESSION</div>
-          <small style={{ display: 'block', margin: '6px 0' }}>Suggested steps, not medical advice. Not clinically validated.</small>
-          <small style={{ display: 'block', margin: '6px 0' }}>{pg.status(s.progress.prog ?? pg.emptyProg())}</small><small style={{ display: 'block', margin: '6px 0' }}>Not active yet: nothing changes before your readiness review is recorded. Automatic sets are not available. Rep steps are planned first.</small>
-          <small style={{ display: 'block', margin: '6px 0' }}>Your routine stays the same until your readiness review is recorded. Warm-up (5 min) and cool-down (2 min) never change.</small>
-          {s.progress.prog?.lock && <div className="err">Stop exercising and rest if you get chest pain or tightness, dizziness or faintness, unusual breathlessness, or a new irregular heartbeat. If symptoms are severe or you faint, call 112 (India) immediately. Please get medical advice before your next workout. Progression stays locked until you tell us you have spoken to a medical professional and that they said exercise is okay for you.</div>}
-          {s.progress.prog?.lastAction && <div><small style={{ display: 'block', margin: '6px 0' }}>Last change: {s.progress.prog.lastAction.ex} moved up after your last sessions were Easy. Only this exercise changed.</small><button className="btn ghost" onClick={() => update({ ...s.progress, prog: pg.revertLast(s.progress.prog) })}>UNDO LAST CHANGE</button></div>}
-        </div>
-      </>}
-      {page === 'settings' && <>
-        <div className="card stats"><div className="tag">SETTINGS</div>
-        <label className="mo"><input type="checkbox" checked={motion} onChange={e => setMotion(e.target.checked)} /> Animations</label>        <small>Words on screen are English. Trainer voice demos are in Hindi, with English captions.</small><button className="btn ghost" onClick={logout}>LOG OUT</button>{!real && <button className="btn ghost" onClick={() => { localStorage.removeItem(DEMO); location.href = '/' }}>RESET DEMO DATA</button>}</div>
-      </>}
-    </section>
-    <ExerciseLibrary locked={locked} holds={s.progress.prog?.holds ?? {}} />
-    {step === 'feel' && <div className="modal"><div className="card"><h3>HOW DID IT FEEL?</h3>{(['easy', 'medium', 'hard'] as const).map(f => <button key={f} className={'opt' + (feel === f ? ' on' : '')} onClick={() => setFeel(f)}>{f[0].toUpperCase() + f.slice(1)}</button>)}<div className="quota"><small style={{ display: 'block', margin: '6px 0' }}>Optional: tick the moves where you did every rep and set.</small>{pg.exercisesIn(dayPlan(qDay ?? day).moves.map(m => m[0])).map(ex => <label key={ex} className="mo" style={{ display: 'block' }}><input type="checkbox" checked={doneEx.includes(ex)} onChange={() => toggle(doneEx, setDoneEx, ex)} /> {ex}</label>)}</div><button className="btn" disabled={!feel} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>}
-    {step === 'symptom' && <div className="modal"><div className="card"><h3>ANY OF THESE?</h3>{([['pain', 'Pain'], ['dizziness', 'Dizziness or faintness'], ['chest', 'Chest pain or tightness'], ['breathing', 'Breathing feels unusual'], ['irregular-heartbeat', 'New irregular heartbeat'], ['none', 'None of these']] as const).map(([k, l]) => <button key={k} className={'opt' + (sym === k ? ' on' : '')} onClick={() => setSym(k)}>{l}</button>)}
-      {sym === 'pain' && <div><small style={{ display: 'block', margin: '6px 0' }}>Optional: which move hurt? If you pick none, every move today is held.</small>{pg.exercisesIn(dayPlan(qDay ?? day).moves.map(m => m[0])).map(ex => <label key={ex} className="mo" style={{ display: 'block' }}><input type="checkbox" checked={painEx.includes(ex)} onChange={() => toggle(painEx, setPainEx, ex)} /> {ex}</label>)}</div>}
-      {sym === 'pain' && <div className="err">Skip that exercise today. Increases for it stay on hold. If the pain keeps coming back, please get medical advice about that exercise.</div>}
-      {(sym === 'dizziness' || sym === 'breathing' || sym === 'chest' || sym === 'irregular-heartbeat') && <div className="err">Stop exercising and rest. If symptoms are severe or you faint, call 112 (India) immediately. Please get medical advice before your next workout. Progression stays locked until you tell us you have spoken to a medical professional and that they said exercise is okay for you.</div>}<button className="btn" disabled={!sym} onClick={finish}>CONFIRM</button><button className="btn ghost" onClick={() => { setStep(null); setFeel(null); setSym(null); setQDay(null) }}>STOP</button></div></div>}
-  </main>)
+  return <CoreExperience page={page} session={s} status={status} error={saveErr} notice={notice} restoreError={restoreErr}
+    restore={doRestore} logout={logout} update={update} motion={motion} setMotion={setMotion} t0={t0} setT0={setT0}
+    authenticate={async (username, password, signup) => {
+      if (!backend) throw new Error('Account service unavailable.')
+      const r = withPending(await (signup ? backend.signUp(username, password) : backend.signIn(username, password)))
+      cachedSession = r; setS(r)
+    }}
+    chooseAvatar={async () => {
+      if (!s) return
+      try { await saveAny(s, { avatar: 'sung-jinwoo' }); const n = { ...s, avatar: 'sung-jinwoo' }; cachedSession = n; setS(n) }
+      catch { setSaveErr('Could not save your hunter. Reload saved progress before retrying.') }
+    }} />
 }

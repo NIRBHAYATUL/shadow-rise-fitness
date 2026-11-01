@@ -7,10 +7,10 @@ const App = lazy(() => import("../fitrpg/ui/App"));
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Shadow Rise Fitness" },
-      { name: "description", content: "Level up your hunter with daily home workout quests." },
-      { property: "og:title", content: "Shadow Rise Fitness" },
-      { property: "og:description", content: "Level up your hunter with daily home workout quests." },
+      { title: "Dashboard - Shadow Rise Fitness" },
+      { name: "description", content: "Sung Jinwoo player status, cosmetic ranks and reviewed daily workout quests." },
+      { property: "og:title", content: "Dashboard - Shadow Rise Fitness" },
+      { property: "og:description", content: "Sung Jinwoo player status, cosmetic ranks and reviewed daily workout quests." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
