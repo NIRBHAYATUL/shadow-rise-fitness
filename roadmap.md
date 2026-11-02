@@ -1,5 +1,7 @@
 # Shadow Rise Fitness frontend rebuild
 
+- [ ] November 2 correctness-only task: fix all strict type errors without behavior, screen, styling, text or data changes; verify automatic typecheck and rerun the full test suite.
+
 - [x] November 1 core presentation and feedback rule implemented; account mobile view checked, 68 tests pass. Dashboard/live confirmation visual QA remains open below.
 
 - [x] Add existing-guide Exercise Library with lock/hold playback gates; 2 isolated tests pass.
