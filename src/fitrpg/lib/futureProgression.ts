@@ -33,9 +33,9 @@ export const baseline = (ex: Exercise): Dose => [ex === 'bird-dog' ? 3 : ex === 
 const qualifies = (o: Observation) => o.effort === 'easy' && o.fullQuota && o.recovery === 'ok' && o.symptom === 'none'
 export function ladder(ex: Exercise, setsSelected: boolean): Dose[] {
   if (ex === 'standalone-walk') return [[10], [12], [15]] // minutes, never a second set
-  const first = ex === 'bird-dog' ? [3, 4, 5, 6] : [5, 8, 10, 12]
+  const first: [number, number, number, number] = ex === 'bird-dog' ? [3, 4, 5, 6] : [5, 8, 10, 12]
   const out = first.map(x => [x])
-  if (setsSelected && CORE.includes(ex as Core)) for (const n of first) out.push([12 === first[0] ? 12 : ex === 'bird-dog' ? 6 : 12, n])
+  if (setsSelected && CORE.includes(ex as Core)) for (const n of first) out.push([first[3], n])
   return out
 }
 export function nextScheduledAfter(day: string, core: Core[], optional: Optional[]): string | null {

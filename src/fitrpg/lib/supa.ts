@@ -12,10 +12,12 @@ export function supabaseBackend(url: string, anonKey: string, atomic = ATOMIC_SA
   let revision: number | null = null
   const alias = (u: string) => `${u.trim().toLowerCase()}@players.shadowrise.example`
   const load = async (username: string): Promise<Session> => {
-    const { data, error } = await sb.from('player_state').select(atomic ? 'avatar,progress,revision' : 'avatar,progress').maybeSingle()
+    const { data, error } = atomic
+      ? await sb.from('player_state').select('avatar,progress,revision').maybeSingle()
+      : await sb.from('player_state').select('avatar,progress').maybeSingle()
     // A failed read must never look like a new player: the next save would overwrite real progress.
     if (error) throw new Error('Could not load your saved progress. Check your connection and try again.')
-    revision = data?.revision ?? (data ? null : 0)
+    revision = data && 'revision' in data ? data.revision ?? null : data ? null : 0
     const { data: auth } = await sb.auth.getSession(); const uid = auth?.session?.user?.id
     return { username, ...(uid === undefined ? {} : { uid }), avatar: data?.avatar ?? null, progress: clean(data?.progress) ?? emptyProgress() }
   }

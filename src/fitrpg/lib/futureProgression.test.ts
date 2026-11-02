@@ -16,16 +16,16 @@ describe('future engine: dormant design, no medical-safety claim',()=>{
  it('deduplicates sessions and rejects future/same-day data and mismatched prescribed dose',()=>{let s=F.logObservation(ready(),obs('2026-11-03'));s=F.logObservation(s,obs('2026-11-03'));expect(s.observations.length).toBe(1);expect(F.propose(s,'bridge','2026-11-07',safe)).toBeNull();expect(F.propose(two(ready(),[8]),'bridge','2026-11-07',safe)).toBeNull();expect(F.propose(two(ready()),'bridge','2026-11-05',safe)).toBeNull()})
  it('preserves programme lock, exercise hold and opt out above every proposal',()=>{const s=two(ready());expect(F.propose(s,'bridge','2026-11-07',{lock:{reason:'chest'},holds:{}})).toBeNull();expect(F.propose(s,'bridge','2026-11-07',{lock:null,holds:{bridge:'x'}})).toBeNull();expect(F.propose(F.optOut(s),'bridge','2026-11-07',safe)).toBeNull()})
  it('allows one step, then cooldown and fresh sessions are required',()=>{let s=two(ready());s=F.acceptProposal(s,F.propose(s,'bridge','2026-11-07',safe)!);expect(s.dose.bridge).toEqual([8]);expect(F.propose(s,'bridge','2026-11-07',safe)).toBeNull();s=F.logObservation(F.logObservation(s,obs('2026-11-08',{dose:[8]})),obs('2026-11-10',{dose:[8]}));expect(F.propose(s,'bridge','2026-11-13',safe)).toBeNull();expect(F.propose(s,'bridge','2026-11-14',safe)?.after).toEqual([10]);expect(F.propose(s,'bridge','2026-12-01',safe)?.after).toEqual([10])})
- it('requires explicit second-set selection, full quota on both sets; regresses after two Hard or misses',()=>{let s={...ready(),review:{...review,secondSetsSelected:true},dose:{bridge:[12]}};s=two(s,[12]);expect(F.propose(s,'bridge','2026-11-07',safe)?.after).toEqual([12,5]);for(const patch of [{effort:'hard'},{fullQuota:false}] as Partial<F.Observation>[]){const r=two({...ready(),review:{...review,secondSetsSelected:true},dose:{bridge:[12,5]}},[12,5],patch);expect(F.propose(r,'bridge','2026-11-07',safe)?.after).toEqual([12])}expect(F.propose(two({...ready(),dose:{bridge:[12]}},[12]),'bridge','2026-11-07',safe)).toBeNull()})
+ it('requires explicit second-set selection, full quota on both sets; regresses after two Hard or misses',()=>{let s: F.FutureState={...ready(),review:{...review,secondSetsSelected:true},dose:{bridge:[12]}};s=two(s,[12]);expect(F.propose(s,'bridge','2026-11-07',safe)?.after).toEqual([12,5]);for(const patch of [{effort:'hard'},{fullQuota:false}] as Partial<F.Observation>[]){const r=two({...ready(),review:{...review,secondSetsSelected:true},dose:{bridge:[12,5]}},[12,5],patch);expect(F.propose(r,'bridge','2026-11-07',safe)?.after).toEqual([12])}expect(F.propose(two({...ready(),dose:{bridge:[12]}},[12]),'bridge','2026-11-07',safe)).toBeNull()})
  it('undo keeps an audit trail and cooldown; state roundtrip preserves scope',()=>{let s=two(ready());s=F.acceptProposal(s,F.propose(s,'bridge','2026-11-07',safe)!);s=F.undo(s,'2026-11-07');expect(s.dose.bridge).toEqual([5]);expect(s.changes.length).toBe(2);expect(F.undo(s,'2026-11-08')).toBe(s);expect(F.propose(s,'bridge','2026-11-07',safe)).toBeNull();expect(JSON.parse(JSON.stringify(s)).review.optionalSelected).toEqual([])})
  it('offline lifecycle: review to reps cap, second sets, regression, undo, opt-out and JSON persistence',()=>{
    let s=F.recordReadiness(F.emptyFuture(),{...review,secondSetsSelected:true})
-   const dates=['2026-11-03','2026-11-05','2026-11-10','2026-11-12','2026-11-17','2026-11-19','2026-11-24','2026-11-26']
-   for(let stage=0;stage<4;stage++) {
+   const dates=[['2026-11-03','2026-11-05'],['2026-11-10','2026-11-12'],['2026-11-17','2026-11-19'],['2026-11-24','2026-11-26']] as const
+   for(const [firstDay, secondDay] of dates) {
      const dose=s.dose.bridge ?? [5]
-     s=F.logObservation(s,obs(dates[2*stage],{dose}))
-     s=F.logObservation(s,obs(dates[2*stage+1],{dose}))
-     const dt=new Date(dates[2*stage+1]+'T00:00:00Z');dt.setUTCDate(dt.getUTCDate()+2)
+     s=F.logObservation(s,obs(firstDay,{dose}))
+     s=F.logObservation(s,obs(secondDay,{dose}))
+     const dt=new Date(secondDay+'T00:00:00Z');dt.setUTCDate(dt.getUTCDate()+2)
      const c=F.propose(s,'bridge',dt.toISOString().slice(0,10),safe)
      expect(c).not.toBeNull();s=F.acceptProposal(s,c!)
      s=JSON.parse(JSON.stringify(s))
