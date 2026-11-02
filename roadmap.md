@@ -1,5 +1,7 @@
 # Shadow Rise Fitness frontend rebuild
 
+- [x] November 2 correctness-only task: fixed strict type errors; automatic typecheck/build clean at 00:19:59 UTC; full suite rerun with 11 files / 68 tests passing. No screen, styling, text, database or production-progress changes.
+
 - [x] November 1 core presentation and feedback rule implemented; account mobile view checked, 68 tests pass. Dashboard/live confirmation visual QA remains open below.
 
 - [x] Add existing-guide Exercise Library with lock/hold playback gates; 2 isolated tests pass.
@@ -13,4 +15,4 @@
 - [ ] Run tests and inspect automatic typecheck/build, then mobile/desktop preview QA without production writes.
 - [ ] Record verified results, credit usage and continuation; keep unpublished.
 
-Continuation details: `FRONTEND-CONTINUATION.md` November 1 update. Open: inherited strict typecheck diagnostics, dashboard/popup/live account QA, 63 genuine level drawings, synchronized motion, local audio QA. No publishing or production writes.
+Continuation details: `FRONTEND-CONTINUATION.md` November 2 update. Open: dashboard/popup/live account QA, 63 genuine level drawings, synchronized motion, local audio QA. No publishing or production writes.

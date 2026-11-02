@@ -1,5 +1,11 @@
 # Shadow Rise Fitness — continuation for 30 October 2026
 
+## November 2 correctness-only update
+- Fixed unchecked character/date/ladder access, honest optional rep-return typing, dynamic-query inference, exact optional session UID construction, index-signature access, overly narrow mutable test state and unchecked mock-call access. Existing authentication and atomic save requests remain unchanged; no UI copy, styling, database, RPC or production-data changes.
+- Changed `CoreExperience.tsx`, `progression.ts`, `futureProgression.ts`, `supa.ts`, `futureProgression.test.ts`, `supa.test.ts` and continuation/roadmap notes. No new assertions, suppression directives or compiler-setting relaxations.
+- Automatic strict typecheck/build reported clean (`build OK`) at 2026-11-02T00:19:59Z after the final source patch. Full suite subsequently rerun: 11 files, 68 tests passed. Manual build/typecheck not invoked per workspace rules; automatic checks supplied diagnostics before and after fixes.
+- Dashboard/live account QA, 63 genuine drawings, synchronized motion and local audio QA remain pending. Keep preview only; no production writes or publishing.
+
 ## November 1 update — supersedes the old stop status below
 - Implemented new `CoreExperience.tsx` account presentation, dashboard, XP/level/rank view, reviewed workout flow, compulsory Easy/Medium/Hard confirmation, progress/settings and truthful text-only 100-level registry. `App.tsx` retains its session/save/outbox machinery but renders the fresh presentation. Database, RPC, accounts, auth backend and save modules unchanged; no production writes or new test accounts.
 - Added `coreRules.ts` and 9 tests: confirmed feedback awards existing 120 XP, duplicates/rest-day credit prevented, locks/pending health flags block completion, safety/holds/reviews preserved, no Monday/Sunday prescription. Existing game/progression APIs remain untouched. No symptom questionnaire is rendered; stop restrictions remain.
