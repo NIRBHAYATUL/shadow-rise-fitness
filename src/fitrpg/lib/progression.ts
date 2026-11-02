@@ -103,7 +103,7 @@ export function revertLast(s: ProgState): ProgState {
   const lastChange = { ...s.lastChange }; delete lastChange[c.ex]
   return { ...s, step: { ...s.step, [c.ex]: c.from }, lastChange, lastAction: null }
 }
-export function reps(s: ProgState, ex: Ex): number { return LADDER[ex][s.step[ex] ?? 0] }
+export function reps(s: ProgState, ex: Ex): number | undefined { return LADDER[ex][s.step[ex] ?? 0] }
 // Visible status for the UI (to be wired after review).
 export function status(s: ProgState): string {
   if (s.lock) return 'Progression is locked. Medical advice is needed first.'
@@ -140,7 +140,7 @@ export function setRecovery(s: ProgState, day: string, r: Recovery): ProgState {
 export function pendingRecoveryDay(s: ProgState | undefined, today: string): string | null {
   if (!s) return null
   const days = s.history.filter(h => h.recoveryNextDay === 'unknown' && h.day < today && daysBetween(h.day, today) <= 3).map(h => h.day).sort()
-  return days.length ? days[days.length - 1] : null
+  return days[days.length - 1] ?? null
 }
 
 // Always-available safety report, any effort level, no XP, no extra steps for Easy/Medium. Locks programme-wide.
@@ -156,5 +156,5 @@ export function normalizeProg(p: unknown): ProgState | undefined {
   const o = p as Record<string, any>
   const obj = (v: unknown) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {})
   const arr = (v: unknown) => (Array.isArray(v) ? v : [])
-  return { ...emptyProg(), ...o, step: obj(o.step), history: arr(o.history), advice: arr(o.advice), holds: obj(o.holds), lastChange: obj(o.lastChange), lock: o.lock ?? null, lastAction: o.lastAction ?? null } as ProgState
+  return { ...emptyProg(), ...o, step: obj(o['step']), history: arr(o['history']), advice: arr(o['advice']), holds: obj(o['holds']), lastChange: obj(o['lastChange']), lock: o['lock'] ?? null, lastAction: o['lastAction'] ?? null } as ProgState
 }

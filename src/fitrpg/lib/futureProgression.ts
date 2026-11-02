@@ -35,7 +35,7 @@ export function ladder(ex: Exercise, setsSelected: boolean): Dose[] {
   if (ex === 'standalone-walk') return [[10], [12], [15]] // minutes, never a second set
   const first = ex === 'bird-dog' ? [3, 4, 5, 6] : [5, 8, 10, 12]
   const out = first.map(x => [x])
-  if (setsSelected && CORE.includes(ex as Core)) for (const n of first) out.push([first[first.length - 1], n])
+  if (setsSelected && CORE.includes(ex as Core)) for (const n of first) out.push([12 === first[0] ? 12 : ex === 'bird-dog' ? 6 : 12, n])
   return out
 }
 export function nextScheduledAfter(day: string, core: Core[], optional: Optional[]): string | null {
@@ -94,8 +94,9 @@ export function propose(s: FutureState, ex: Exercise, today: string, safety: Saf
   if (recent.length < 2) return null
   if (recent.some(o => o.symptom !== 'none')) return null
   const backwards = current.length === 2 && (recent.every(o => o.effort === 'hard') || recent.every(o => !o.fullQuota))
-  if (backwards) return { day: today, ex, before: [...current], after: [...steps[index - 1]], reason: 'regression' }
-  if (index + 1 < steps.length && recent.every(qualifies)) return { day: today, ex, before: [...current], after: [...steps[index + 1]], reason: 'easy' }
+  const previousStep = steps[index - 1], nextStep = steps[index + 1]
+  if (backwards && previousStep) return { day: today, ex, before: [...current], after: [...previousStep], reason: 'regression' }
+  if (nextStep && recent.every(qualifies)) return { day: today, ex, before: [...current], after: [...nextStep], reason: 'easy' }
   return null
 }
 // Pure state transition for offline testing/preparation. The live integration below remains disabled.

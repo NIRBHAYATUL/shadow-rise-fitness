@@ -17,7 +17,7 @@ export function supabaseBackend(url: string, anonKey: string, atomic = ATOMIC_SA
     if (error) throw new Error('Could not load your saved progress. Check your connection and try again.')
     revision = data?.revision ?? (data ? null : 0)
     const { data: auth } = await sb.auth.getSession(); const uid = auth?.session?.user?.id
-    return { username, uid, avatar: data?.avatar ?? null, progress: clean(data?.progress) ?? emptyProgress() }
+    return { username, ...(uid === undefined ? {} : { uid }), avatar: data?.avatar ?? null, progress: clean(data?.progress) ?? emptyProgress() }
   }
   return {
     async signUp(u, p) {
