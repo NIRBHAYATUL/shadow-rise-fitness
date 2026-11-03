@@ -8,6 +8,8 @@ describe('existing guide safety boundary', () => {
     for (const guide of EXISTING_GUIDES) expect(guideBlocked(guide.id, true)).toBe(true)
     const { container } = render(<ExerciseLibrary locked />)
     expect(container.querySelector('video')).toBeNull()
+    expect(container.querySelector('.srf-motion')).toBeNull()
+    expect(container.textContent).toContain('Knees track over toes')
   })
   it('blocks a held movement without blocking an unrelated movement', () => {
     const holds = { 'bird-dog': '2026-10-29' }
@@ -16,5 +18,6 @@ describe('existing guide safety boundary', () => {
     const { container } = render(<ExerciseLibrary locked={false} holds={holds} />)
     expect(container.querySelector('video[src="/hindi/bird-dog-hi.mp4"]')).toBeNull()
     expect(container.querySelector('video[src="/hindi/bridge-hi.mp4"]')).not.toBeNull()
+    expect(container.querySelectorAll('.srf-motion').length).toBe(7)
   })
 })

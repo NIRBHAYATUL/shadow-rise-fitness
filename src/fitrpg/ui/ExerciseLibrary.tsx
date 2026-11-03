@@ -1,5 +1,17 @@
 import { BookOpen, ShieldAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import MotionDemo from './MotionDemo'
+
+export const FORM_POINTS: Record<string, string[]> = {
+  'room-walk': ['Stand tall, eyes forward.', 'Lift knees to a comfortable height; swing opposite arm.', 'Land softly; keep breathing normally.'],
+  'mini-squat': ['Feet hip-width and flat; weight through whole foot.', 'Hips go back a little; chest stays proud.', 'Knees track over toes, not inward. Small, pain-free range only.'],
+  'bridge': ['Lie on your back, knees bent, feet flat.', 'Squeeze glutes and lift hips until shoulders, hips and knees line up.', 'Lower slowly; do not arch the lower back.'],
+  'wall-push-up': ['Hands on the wall at chest height, a bit wider than shoulders.', 'Body stays one straight line from heels to head.', 'Bend elbows to bring chest toward the wall, then press back.'],
+  'bird-dog': ['Hands under shoulders, knees under hips.', 'Reach ONE arm OR ONE leg at a time — never a diagonal pair.', 'Keep hips and back level; move slowly.'],
+  'calf-raise': ['Stand tall, lightly touch a wall for balance.', 'Rise onto the balls of your feet; toes stay down.', 'Lower heels slowly.'],
+  'bottle-curl': ['Light plastic bottle only.', 'Elbows stay at your sides; upper arm does not swing.', 'Curl up and lower slowly.'],
+  'cool-down': ['Slow, gentle pace.', 'Relaxed shoulders, easy breathing.', 'Follow today’s cool-down time.'],
+}
 
 export const EXISTING_GUIDES = [
   { id: 'room-walk', name: 'Room walk or march', file: 'room-walk', cue: 'Easy pace; short blocks are fine.' },
@@ -18,14 +30,15 @@ export function guideBlocked(id: string, locked: boolean, holds: Record<string, 
 
 export default function ExerciseLibrary({ locked, holds = {} }: { locked: boolean; holds?: Record<string, unknown> }) {
   return <section id="exercise-library" className="dark srf-library" aria-labelledby="library-heading">
-    <header><div><span className="tag">MOVEMENT REFERENCE</span><h2 id="library-heading"><BookOpen size={22} aria-hidden="true" /> Exercise Library</h2></div><span className="srf-guide-count">8 existing guides</span></header>
+    <header><div><span className="tag">MOVEMENT REFERENCE</span><h2 id="library-heading"><BookOpen size={22} aria-hidden="true" /> Exercise Library</h2></div><span className="srf-guide-count">8 motion demos · 8 existing guides</span></header>
     <p>Today’s workout is separate. These references do not add exercises, sets or load to your plan.</p>
-    <p className="srf-library-note">Existing local schematic guides — not new synchronized front/side motion. Hindi audio and English captions have not been re-verified.</p>
+    <p className="srf-library-note">NEW: each movement now has a real looping front + side motion demo (simple figure, built in the app). The older local guide videos are kept and labelled “existing”. Hindi audio and English captions have not been re-verified.</p>
     {locked && <p role="status" className="srf-library-stop"><ShieldAlert size={20} aria-hidden="true" /> Playback paused after your safety report. Stop exercising and get medical advice before your next workout.</p>}
     <div className="srf-guide-grid">{EXISTING_GUIDES.map(guide => {
       const blocked = guideBlocked(guide.id, locked, holds)
-      return <article key={guide.id} className="srf-guide"><span className="tag">EXISTING LOCAL GUIDE</span><h3>{guide.name}</h3><p>{guide.cue}</p>
-        {blocked ? <p className="srf-library-stop">{locked ? 'Playback unavailable while locked.' : 'This movement is on hold. Playback unavailable.'}</p> : <details><summary>Open existing guide</summary><video aria-label={`${guide.name} existing guide`} controls playsInline preload="none" src={`/hindi/${guide.file}-hi.mp4`} /></details>}
+      return <article key={guide.id} className="srf-guide"><span className="tag">NEW FRONT + SIDE MOTION</span><h3>{guide.name}</h3><p>{guide.cue}</p>
+        <ul className="srf-form-points">{(FORM_POINTS[guide.id] ?? []).map(point => <li key={point}>{point}</li>)}</ul>
+        {blocked ? <p className="srf-library-stop">{locked ? 'Playback unavailable while locked.' : 'This movement is on hold. Playback unavailable.'}</p> : <><MotionDemo id={guide.id} name={guide.name} /><details><summary>Open existing guide (older local video)</summary><video aria-label={`${guide.name} existing guide`} controls playsInline preload="none" src={`/hindi/${guide.file}-hi.mp4`} /></details></>}
       </article>
     })}</div>
     <Button variant="outline" asChild><a href="#top">Back to navigation</a></Button>
