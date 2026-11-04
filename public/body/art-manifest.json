@@ -1,7 +1,7 @@
 {
   "target_count": 100,
-  "accepted_count": 37,
-  "note": "Unfinished levels reuse their current rank anchor explicitly. Not100distinctimages.",
+  "accepted_count": 40,
+  "note": "40 accepted distinct drawings, including newly drawn levels 32\u201334. The remaining 60 levels explicitly reuse their current rank anchor; not 100 distinct images. No recolored or scaled clones counted.",
   "entries": [
     {
       "level": 1,
@@ -233,6 +233,30 @@
       "src": "/body/jinwoo-04.webp",
       "kind": "approved rank anchor",
       "sha256": "1f4dd295264d8cda9f04ffb6e437b84320a3f19c58a57a234ac8470a52a3eb9a"
+    },
+    {
+      "level": 32,
+      "src": "/body/level-032.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 31,
+      "meaning": "Asymmetric broad storm flap, articulated elbow seams, forearm strap, rising crown tuft and faint skirt wisps",
+      "sha256": "6df9c320110daa19b79bcd5d9d5566727ae09454639643ff5796fa8f3a5e865b"
+    },
+    {
+      "level": 33,
+      "src": "/body/level-033.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 31,
+      "meaning": "Double-breasted belted coat with symmetric capelet yoke, angular hip flaps, side-swept fringe and crossed-strap boots",
+      "sha256": "b1d4d87b72a385aaa3006406caf49b580dcbae87d1df4b4a93e99c728fa31477"
+    },
+    {
+      "level": 34,
+      "src": "/body/level-034.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 31,
+      "meaning": "Single shoulder mantle, narrow center clasps, long split skirt panels, inset chest pocket and zipped ribbed boots with stronger skirt wisps",
+      "sha256": "ee608d403ede65f19df5e6b5dbeb38b182af907514d4923e47bec4422609b871"
     },
     {
       "level": 41,
