@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import manifest from '../../../..//public/body/art-manifest.json'
+import manifest from '../../../public/body/art-manifest.json'
 import { bodyArt, ACCEPTED_ART_COUNT, DISTINCT_ART_LEVELS } from './levels'
 describe('truthful partial art registry', () => {
  it('has 40 distinct files without rounding unfinished levels forward', () => {
@@ -23,7 +23,7 @@ describe('truthful partial art registry', () => {
  expect(manifest.accepted_count).toBe(40)
  expect(manifest.entries.map(entry=>entry.level)).toEqual([...DISTINCT_ART_LEVELS])
  const hashes = manifest.entries.map(entry => {
- const hash = createHash('sha256').update(readFileSync(new URL(`../../../../public${entry.src}`,import.meta.url))).digest('hex')
+ const hash = createHash('sha256').update(readFileSync(new URL(`../../../public${entry.src}`,import.meta.url))).digest('hex')
  expect(hash).toBe(entry.sha256)
  expect(bodyArt(entry.level).src).toBe(entry.src)
  return hash
