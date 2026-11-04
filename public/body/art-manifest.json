@@ -1,7 +1,7 @@
 {
   "target_count": 100,
-  "accepted_count": 40,
-  "note": "40 accepted distinct drawings, including newly drawn levels 32\u201334. The remaining 60 levels explicitly reuse their current rank anchor; not 100 distinct images. No recolored or scaled clones counted.",
+  "accepted_count": 41,
+  "note": "41 accepted distinct drawings, including new levels 32\u201335. The remaining 59 levels explicitly reuse their rank anchor; not 100 distinct images. No recolored or scaled clones counted.",
   "entries": [
     {
       "level": 1,
@@ -257,6 +257,14 @@
       "anchor_level": 31,
       "meaning": "Single shoulder mantle, narrow center clasps, long split skirt panels, inset chest pocket and zipped ribbed boots with stronger skirt wisps",
       "sha256": "ee608d403ede65f19df5e6b5dbeb38b182af907514d4923e47bec4422609b871"
+    },
+    {
+      "level": 35,
+      "src": "/body/level-035.webp",
+      "kind": "distinct hunter garment construction",
+      "anchor_level": 31,
+      "meaning": "Four-pocket exterior utility vest, waist side straps, rounded long coat tails, reinforced forearm panels and lace-up boots; hair and aura similar to level 34",
+      "sha256": "489b675fb7ccf745c79076822b1ccab1e8a4e655f0a51322b1b9e3d390746fc3"
     },
     {
       "level": 41,
