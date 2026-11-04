@@ -1,6 +1,6 @@
 # Shadow Rise Fitness frontend rebuild
 
-- [x] November 4 second batch: added genuine level 35 WebP, registry and SHA-256 manifest; accepted 41/100, 59 missing remain. Generation stopped with 1.09 daily free credits reserved for checks/notes.
+- [x] November 4 second batch: added genuine level 35 WebP, registry and SHA-256 manifest; accepted 41/100, 59 missing remain. All 78 tests / 12 files pass; automatic build/typecheck OK; preview asset verified. Final free reading 0.59/5.00 (batch observed use 1.45). Stopped; next level 36 after daily reset.
 
 - [x] November 4: accepted genuine full-body level 32, 33, 34 artwork; WebP files, registry and SHA-256 manifest wired. Accepted 40/100; 60 missing remain. All 77 tests / 12 files pass; automatic build/typecheck OK; preview serves all three. Last daily free reading 2.34/5.00 (observed use 2.66); next start 35.
 - [ ] Next genuine-art batch: 36–40, skip anchor 41, then 42 upward; approved style, lean proportions, distinct constructions only.
