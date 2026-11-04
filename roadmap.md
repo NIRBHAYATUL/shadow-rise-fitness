@@ -1,6 +1,6 @@
 # Shadow Rise Fitness frontend rebuild
 
-- [x] November 4: accepted genuine full-body level 32, 33, 34 artwork; WebP files, registry and SHA-256 manifest wired. Accepted 40/100; 60 missing remain. Full-suite result and final free credit reading recorded in continuation after checks.
+- [x] November 4: accepted genuine full-body level 32, 33, 34 artwork; WebP files, registry and SHA-256 manifest wired. Accepted 40/100; 60 missing remain. All 77 tests / 12 files pass; automatic build/typecheck OK; preview serves all three. Last daily free reading 2.34/5.00 (observed use 2.66); next start 35.
 - [ ] Next genuine-art batch: 35–40, skip anchor 41, then 42 upward; approved style, lean proportions, distinct constructions only. Current batch stopped at three drawings to reserve free credits for checks.
 
 - [x] November 2 correctness-only task: fixed strict type errors; automatic typecheck/build clean at 00:19:59 UTC; full suite rerun with 11 files / 68 tests passing. No screen, styling, text, database or production-progress changes.
