@@ -1,5 +1,11 @@
 # Shadow Rise Fitness — continuation for 30 October 2026
 
+## November 4 second avatar batch — stop at level 35
+- Added only **level 35**, a genuinely redrawn lean-athletic full-body hunter with exterior four-pocket utility vest, side straps, rounded long coat tails, forearm panels and lace-up boots. Hair/aura remain similar to 34; uniqueness comes from new garment construction, not recoloring/scaling. Reviewed generated image, saved `public/body/level-035.webp`, registered in `DISTINCT_ART_LEVELS` and manifest with SHA-256. Existing assets untouched.
+- **accepted_count: 41/100; 59 of the 60 missing at batch start remain.** Unfinished levels still use honest rank-anchor fallbacks. No auth/save/workout/progression/motion/UI-copy changes or publishing.
+- Initial daily free build reading **2.04/5.00**, after generation **1.09/5.00**. Stopped image generation immediately to reserve credits for wiring/tests/notes; no paid/external services, upgrade or top-up invoked. Final reading and verification appended after checks; charges after the last reading are not yet visible.
+- Next: **36–40**, skip approved 41, then 42 upward. Keep the same approved lean proportions and cel-shaded style, but explicitly request fresh hair geometry and aura staging as well as distinct garment construction. Review drawings before acceptance, convert to zero-padded WebP, register/check hashes, update counts/tests/notes. Existing stale registry sentence remains untouched under the no-other-text rule.
+
 ## November 4 avatar batch — preview only
 - Added genuine newly drawn full-body lean-athletic artworks for levels **32, 33, 34** using built-in image editing with approved rank/level references; reviewed all three results before acceptance. Existing drawings were not modified. Converted outputs to `public/body/level-032.webp`, `level-033.webp`, `level-034.webp`.
 - Level 32: asymmetric broad chest storm flap, articulated elbows, forearm strap, crown hair tuft and subtle skirt wisps. Level 33: symmetric capelet, belted double-breasted coat, side-swept fringe, crossed-strap boots. Level 34: single shoulder mantle, narrow center clasps, long split skirt, zipped ribbed boots and stronger skirt wisps. Hair remains similar at 33/34; garment construction is genuinely different, not a recolor/scale clone.
